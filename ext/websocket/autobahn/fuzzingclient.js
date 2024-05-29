@@ -10,7 +10,7 @@ const pwd = new URL(".", import.meta.url).pathname;
 const AUTOBAHN_TESTSUITE_DOCKER =
   "crossbario/autobahn-testsuite:0.8.2@sha256:5d4ba3aa7d6ab2fdbf6606f3f4ecbe4b66f205ce1cbc176d6cdf650157e52242";
 
-const self = Deno.execPath();
+const self = system.execPath();
 $`${self} run -A --unstable ${pwd}/autobahn_server.js`.spawn();
 
 for (let i = 0; i < 6; i++) {
@@ -34,7 +34,7 @@ await $`docker run
   .cwd(pwd);
 
 const { deno_websocket } = JSON.parse(
-  Deno.readTextFileSync(`${pwd}/reports/servers/index.json`),
+  system.readTextFileSync(`${pwd}/reports/servers/index.json`),
 );
 const result = Object.values(deno_websocket);
 
@@ -49,4 +49,4 @@ console.log(
   `color: ${failedtests.length == 0 ? "green" : "red"}`,
 );
 
-Deno.exit(failedtests.length == 0 ? 0 : 1);
+system.exit(failedtests.length == 0 ? 0 : 1);

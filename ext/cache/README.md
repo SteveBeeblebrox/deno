@@ -1,6 +1,6 @@
 # deno_cache
 
-This crate implements the Cache API for Deno.
+This crate implements the Cache API for system.
 
 The following APIs are implemented:
 

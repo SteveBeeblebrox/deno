@@ -87,7 +87,7 @@ function processUrlList(urlList, urlListProcessed) {
  * @property {number} redirectCount
  * @property {(() => string)[]} urlList
  * @property {string[]} urlListProcessed
- * @property {number | null} clientRid NOTE: non standard extension for `Deno.HttpClient`.
+ * @property {number | null} clientRid NOTE: non standard extension for `system.HttpClient`.
  * @property {Blob | null} blobUrlEntry
  */
 
@@ -365,7 +365,7 @@ class Request {
       signal = init.signal;
     }
 
-    // NOTE: non standard extension. This handles Deno.HttpClient parameter
+    // NOTE: non standard extension. This handles system.HttpClient parameter
     if (init.client !== undefined) {
       if (
         init.client !== null &&
@@ -373,7 +373,7 @@ class Request {
       ) {
         throw webidl.makeException(
           TypeError,
-          "`client` must be a Deno.HttpClient",
+          "`client` must be a system.HttpClient",
           prefix,
           "Argument 2",
         );
@@ -510,7 +510,7 @@ class Request {
     return request;
   }
 
-  [SymbolFor("Deno.privateCustomInspect")](inspect, inspectOptions) {
+  [SymbolFor("system.privateCustomInspect")](inspect, inspectOptions) {
     return inspect(
       createFilteredInspectProxy({
         object: this,

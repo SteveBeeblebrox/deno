@@ -356,9 +356,9 @@ const nodeCustomInspectSymbol = SymbolFor("nodejs.util.inspect.custom");
 
 // This non-unique symbol is used to support op_crates, ie.
 // in extensions/web we don't want to depend on public
-// Symbol.for("Deno.customInspect") symbol defined in the public API.
+// Symbol.for("system.customInspect") symbol defined in the public API.
 // Internal only, shouldn't be used by users.
-const privateCustomInspect = SymbolFor("Deno.privateCustomInspect");
+const privateCustomInspect = SymbolFor("system.privateCustomInspect");
 
 function getUserOptions(ctx, isCrossContext) {
   const ret = {
@@ -3386,7 +3386,7 @@ class Console {
   }
 }
 
-const customInspect = SymbolFor("Deno.customInspect");
+const customInspect = SymbolFor("system.customInspect");
 
 function inspect(
   value,

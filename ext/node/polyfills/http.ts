@@ -635,7 +635,7 @@ class ClientRequest extends OutgoingMessage {
     );
   }
 
-  _getClient(): Deno.HttpClient | undefined {
+  _getClient(): system.HttpClient | undefined {
     return undefined;
   }
 
@@ -823,7 +823,7 @@ class ClientRequest extends OutgoingMessage {
     return this;
   }
 
-  _createCustomClient(): Promise<Deno.HttpClient | undefined> {
+  _createCustomClient(): Promise<system.HttpClient | undefined> {
     return Promise.resolve(undefined);
   }
 
@@ -1600,12 +1600,12 @@ export function Server(opts, requestListener?: ServerHandler): ServerImpl {
 }
 
 export class ServerImpl extends EventEmitter {
-  #httpConnections: Set<Deno.HttpConn> = new Set();
-  #listener?: Deno.Listener;
+  #httpConnections: Set<system.HttpConn> = new Set();
+  #listener?: system.Listener;
 
-  #addr: Deno.NetAddr;
+  #addr: system.NetAddr;
   #hasClosed = false;
-  #server: Deno.HttpServer;
+  #server: system.HttpServer;
   #unref = false;
   #ac?: AbortController;
   #serveDeferred: ReturnType<typeof Promise.withResolvers<void>>;
@@ -1658,7 +1658,7 @@ export class ServerImpl extends EventEmitter {
     this.#addr = {
       hostname,
       port,
-    } as Deno.NetAddr;
+    } as system.NetAddr;
     this.listening = true;
     nextTick(() => this._serve());
 
@@ -1667,7 +1667,7 @@ export class ServerImpl extends EventEmitter {
 
   _serve() {
     const ac = new AbortController();
-    const handler = (request: Request, info: Deno.ServeHandlerInfo) => {
+    const handler = (request: Request, info: system.ServeHandlerInfo) => {
       const socket = new FakeSocket({
         remoteAddress: info.remoteAddr.hostname,
         remotePort: info.remoteAddr.port,
@@ -1698,7 +1698,7 @@ export class ServerImpl extends EventEmitter {
     try {
       this.#server = serve(
         {
-          handler: handler as Deno.ServeHandler,
+          handler: handler as system.ServeHandler,
           ...this.#addr,
           signal: ac.signal,
           // @ts-ignore Might be any without `--unstable` flag

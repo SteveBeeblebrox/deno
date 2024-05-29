@@ -50,7 +50,7 @@ function debuglogImpl(
       emitWarningIfNeeded(set);
       debugImpls[set] = function debug(...args: unknown[]) {
         const msg = args.map((arg) => inspect(arg)).join(" ");
-        console.error("%s %s: %s", set, String(Deno.pid), msg);
+        console.error("%s %s: %s", set, String(system.pid), msg);
       };
     } else {
       debugImpls[set] = noop;

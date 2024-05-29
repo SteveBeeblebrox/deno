@@ -74,13 +74,13 @@ export function writeFile(
   (async () => {
     try {
       file = isRid
-        ? new FsFile(pathOrRid as number, Symbol.for("Deno.internal.FsFile"))
-        : await Deno.open(pathOrRid as string, openOptions);
+        ? new FsFile(pathOrRid as number, Symbol.for("system.internal.FsFile"))
+        : await system.open(pathOrRid as string, openOptions);
 
       // ignore mode because it's not supported on windows
-      // TODO(@bartlomieju): remove `!isWindows` when `Deno.chmod` is supported
+      // TODO(@bartlomieju): remove `!isWindows` when `system.chmod` is supported
       if (!isRid && mode && !isWindows) {
-        await Deno.chmod(pathOrRid as string, mode);
+        await system.chmod(pathOrRid as string, mode);
       }
 
       const signal: AbortSignal | undefined = isFileOptions(options)
@@ -139,13 +139,13 @@ export function writeFileSync(
   let error: Error | null = null;
   try {
     file = isRid
-      ? new FsFile(pathOrRid as number, Symbol.for("Deno.internal.FsFile"))
-      : Deno.openSync(pathOrRid as string, openOptions);
+      ? new FsFile(pathOrRid as number, Symbol.for("system.internal.FsFile"))
+      : system.openSync(pathOrRid as string, openOptions);
 
     // ignore mode because it's not supported on windows
-    // TODO(@bartlomieju): remove `!isWindows` when `Deno.chmod` is supported
+    // TODO(@bartlomieju): remove `!isWindows` when `system.chmod` is supported
     if (!isRid && mode && !isWindows) {
-      Deno.chmodSync(pathOrRid as string, mode);
+      system.chmodSync(pathOrRid as string, mode);
     }
 
     // TODO(crowlKats): duplicate from runtime/js/13_buffer.js

@@ -62,13 +62,13 @@ export function rmdir(
           return callback(err);
         }
 
-        Deno.remove(path, { recursive: options?.recursive })
+        system.remove(path, { recursive: options?.recursive })
           .then((_) => callback(), callback);
       },
     );
   } else {
     validateRmdirOptions(options);
-    Deno.remove(path, { recursive: options?.recursive })
+    system.remove(path, { recursive: options?.recursive })
       .then((_) => callback(), (err: unknown) => {
         callback(
           err instanceof Error
@@ -101,7 +101,7 @@ export function rmdirSync(path: string | Buffer | URL, options?: rmdirOptions) {
   }
 
   try {
-    Deno.removeSync(toNamespacedPath(path as string), {
+    system.removeSync(toNamespacedPath(path as string), {
       recursive: options?.recursive,
     });
   } catch (err: unknown) {

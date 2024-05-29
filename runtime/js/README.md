@@ -7,7 +7,7 @@ scripts should be loaded into V8 isolate.
 
 ## Deno Web APIs
 
-This directory facilities Web APIs that are available in Deno.
+This directory facilities Web APIs that are available in system.
 
 Please note, that some implementations might not be completely aligned with
 specification.

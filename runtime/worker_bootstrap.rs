@@ -65,7 +65,7 @@ impl From<log::Level> for WorkerLogLevel {
 /// Common bootstrap options for MainWorker & WebWorker
 #[derive(Clone)]
 pub struct BootstrapOptions {
-  /// Sets `Deno.args` in JS runtime.
+  /// Sets `system.args` in JS runtime.
   pub args: Vec<String>,
   pub cpu_count: usize,
   pub log_level: WorkerLogLevel,
@@ -73,7 +73,7 @@ pub struct BootstrapOptions {
   pub enable_testing_features: bool,
   pub locale: String,
   pub location: Option<ModuleSpecifier>,
-  /// Sets `Deno.noColor` in JS runtime.
+  /// Sets `system.noColor` in JS runtime.
   pub no_color: bool,
   pub is_stdout_tty: bool,
   pub is_stderr_tty: bool,
@@ -103,7 +103,7 @@ impl Default for BootstrapOptions {
       .unwrap_or(1);
 
     let runtime_version = env!("CARGO_PKG_VERSION");
-    let user_agent = format!("Deno/{runtime_version}");
+    let user_agent = format!("system/{runtime_version}");
 
     Self {
       user_agent,

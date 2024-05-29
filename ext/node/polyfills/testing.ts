@@ -12,9 +12,9 @@ export function run() {
 function noop() {}
 
 class NodeTestContext {
-  #denoContext: Deno.TestContext;
+  #denoContext: system.TestContext;
 
-  constructor(t: Deno.TestContext) {
+  constructor(t: system.TestContext) {
     this.#denoContext = t;
   }
 
@@ -138,7 +138,7 @@ function prepareDenoTest(name, options, fn, overrides) {
     sanitizeOps: false,
     sanitizeResources: false,
   };
-  Deno.test(denoTestOptions);
+  system.test(denoTestOptions);
   return promise;
 }
 

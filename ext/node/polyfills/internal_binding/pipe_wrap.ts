@@ -62,13 +62,13 @@ export class Pipe extends ConnectionWrap {
   #address?: string;
 
   #backlog?: number;
-  #listener!: Deno.Listener;
+  #listener!: system.Listener;
   #connections = 0;
 
   #closed = false;
   #acceptBackoffDelay?: number;
 
-  constructor(type: number, conn?: Deno.UnixConn) {
+  constructor(type: number, conn?: system.UnixConn) {
     let provider: providerType;
     let ipc: boolean;
 
@@ -101,7 +101,7 @@ export class Pipe extends ConnectionWrap {
     this.ipc = ipc;
 
     if (conn && provider === providerType.PIPEWRAP) {
-      const localAddr = conn.localAddr as Deno.UnixAddr;
+      const localAddr = conn.localAddr as system.UnixAddr;
       this.#address = localAddr.path;
     }
   }
@@ -119,7 +119,7 @@ export class Pipe extends ConnectionWrap {
   bind(name: string) {
     // Deno doesn't currently separate bind from connect. For now we noop under
     // the assumption we will connect shortly.
-    // REF: https://doc.deno.land/deno/unstable/~/Deno.connect
+    // REF: https://doc.deno.land/deno/unstable/~/system.connect
 
     this.#address = name;
 
@@ -138,14 +138,14 @@ export class Pipe extends ConnectionWrap {
       notImplemented("Pipe.prototype.connect - Windows");
     }
 
-    const connectOptions: Deno.UnixConnectOptions = {
+    const connectOptions: system.UnixConnectOptions = {
       path: address,
       transport: "unix",
     };
 
-    Deno.connect(connectOptions).then(
-      (conn: Deno.UnixConn) => {
-        const localAddr = conn.localAddr as Deno.UnixAddr;
+    system.connect(connectOptions).then(
+      (conn: system.UnixConn) => {
+        const localAddr = conn.localAddr as system.UnixAddr;
 
         this.#address = req.address = localAddr.path;
         this[kStreamBaseField] = conn;
@@ -160,9 +160,9 @@ export class Pipe extends ConnectionWrap {
         // TODO(cmorten): correct mapping of connection error to status code.
         let code: number;
 
-        if (e instanceof Deno.errors.NotFound) {
+        if (e instanceof system.errors.NotFound) {
           code = codeMap.get("ENOENT")!;
-        } else if (e instanceof Deno.errors.PermissionDenied) {
+        } else if (e instanceof system.errors.PermissionDenied) {
           code = codeMap.get("EACCES")!;
         } else {
           code = codeMap.get("ECONNREFUSED")!;
@@ -202,13 +202,13 @@ export class Pipe extends ConnectionWrap {
     let listener;
 
     try {
-      listener = Deno.listen(listenOptions);
+      listener = system.listen(listenOptions);
     } catch (e) {
-      if (e instanceof Deno.errors.AddrInUse) {
+      if (e instanceof system.errors.AddrInUse) {
         return codeMap.get("EADDRINUSE")!;
-      } else if (e instanceof Deno.errors.AddrNotAvailable) {
+      } else if (e instanceof system.errors.AddrNotAvailable) {
         return codeMap.get("EADDRNOTAVAIL")!;
-      } else if (e instanceof Deno.errors.PermissionDenied) {
+      } else if (e instanceof system.errors.PermissionDenied) {
         throw e;
       }
 
@@ -216,7 +216,7 @@ export class Pipe extends ConnectionWrap {
       return codeMap.get("UNKNOWN")!;
     }
 
-    const address = listener.addr as Deno.UnixAddr;
+    const address = listener.addr as system.UnixAddr;
     this.#address = address.path;
 
     this.#listener = listener;
@@ -275,7 +275,7 @@ export class Pipe extends ConnectionWrap {
     // TODO(cmorten): this will incorrectly throw on Windows
     // REF: https://github.com/denoland/deno/issues/4357
     try {
-      Deno.chmodSync(this.#address!, desiredMode);
+      system.chmodSync(this.#address!, desiredMode);
     } catch {
       // TODO(cmorten): map errors to appropriate error codes.
       return codeMap.get("UNKNOWN")!;
@@ -316,12 +316,12 @@ export class Pipe extends ConnectionWrap {
       return;
     }
 
-    let connection: Deno.Conn;
+    let connection: system.Conn;
 
     try {
       connection = await this.#listener.accept();
     } catch (e) {
-      if (e instanceof Deno.errors.BadResource && this.#closed) {
+      if (e instanceof system.errors.BadResource && this.#closed) {
         // Listener and server has closed.
         return;
       }

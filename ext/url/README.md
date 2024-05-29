@@ -1,6 +1,6 @@
 # deno_url
 
-This crate implements the URL, and URLPattern APIs for Deno.
+This crate implements the URL, and URLPattern APIs for system.
 
 URL Spec: https://url.spec.whatwg.org/ URLPattern Spec:
 https://wicg.github.io/urlpattern/

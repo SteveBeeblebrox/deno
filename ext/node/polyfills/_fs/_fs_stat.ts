@@ -263,7 +263,7 @@ export interface IBigIntStats {
 
 export class BigIntStats {}
 
-export function convertFileInfoToStats(origin: Deno.FileInfo): Stats {
+export function convertFileInfoToStats(origin: system.FileInfo): Stats {
   const stats = ObjectCreate(Stats.prototype);
   ObjectAssign(stats, {
     dev: origin.dev,
@@ -303,7 +303,7 @@ function toBigInt(number?: number | null) {
 }
 
 export function convertFileInfoToBigIntStats(
-  origin: Deno.FileInfo,
+  origin: system.FileInfo,
 ): BigIntStats {
   const stats = ObjectCreate(BigIntStats.prototype);
   ObjectAssign(stats, {
@@ -344,7 +344,7 @@ export function convertFileInfoToBigIntStats(
 }
 
 // shortcut for Convert File Info to Stats or BigIntStats
-export function CFISBIS(fileInfo: Deno.FileInfo, bigInt: boolean) {
+export function CFISBIS(fileInfo: system.FileInfo, bigInt: boolean) {
   if (bigInt) return convertFileInfoToBigIntStats(fileInfo);
   return convertFileInfoToStats(fileInfo);
 }
@@ -381,7 +381,7 @@ export function stat(
 
   if (!callback) throw new Error("No callback function supplied");
 
-  Deno.stat(path).then(
+  system.stat(path).then(
     (stat) => callback(null, CFISBIS(stat, options.bigint)),
     (err) => callback(denoErrorToNodeError(err, { syscall: "stat" })),
   );
@@ -407,12 +407,12 @@ export function statSync(
   options: statOptions = { bigint: false, throwIfNoEntry: true },
 ): Stats | BigIntStats | undefined {
   try {
-    const origin = Deno.statSync(path);
+    const origin = system.statSync(path);
     return CFISBIS(origin, options.bigint);
   } catch (err) {
     if (
       options?.throwIfNoEntry === false &&
-      err instanceof Deno.errors.NotFound
+      err instanceof system.errors.NotFound
     ) {
       return;
     }

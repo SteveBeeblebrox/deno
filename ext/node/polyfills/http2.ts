@@ -1511,7 +1511,7 @@ export class Http2Server extends Server {
 
     this.on(
       "connection",
-      (conn: Deno.Conn) => {
+      (conn: system.Conn) => {
         try {
           const session = new ServerHttp2Session();
           this.emit("session", session);

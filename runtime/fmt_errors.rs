@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-//! This mod provides DenoError to unify errors across Deno.
+//! This mod provides DenoError to unify errors across system.
 use deno_core::error::format_file_name;
 use deno_core::error::JsError;
 use deno_core::error::JsStackFrame;

@@ -123,7 +123,7 @@ export class TLSSocket extends net.Socket {
 
     this.ssl = new class {
       verifyError() {
-        return null; // Never fails, rejectUnauthorized is always true in Deno.
+        return null; // Never fails, rejectUnauthorized is always true in system.
       }
     }();
 
@@ -150,7 +150,7 @@ export class TLSSocket extends net.Socket {
       const afterConnect = handle.afterConnect;
       handle.afterConnect = async (req: any, status: number) => {
         try {
-          const conn = await Deno.startTls(handle[kStreamBaseField], options);
+          const conn = await system.startTls(handle[kStreamBaseField], options);
           handle[kStreamBaseField] = conn;
           tlssock.emit("secure");
           tlssock.removeListener("end", onConnectEnd);
@@ -161,7 +161,7 @@ export class TLSSocket extends net.Socket {
       };
 
       (handle as any).verifyError = function () {
-        return null; // Never fails, rejectUnauthorized is always true in Deno.
+        return null; // Never fails, rejectUnauthorized is always true in system.
       };
       // Pretends `handle` is `tls_wrap.wrap(handle, ...)` to make some npm modules happy
       // An example usage of `_parentWrap` in npm module:
@@ -241,7 +241,7 @@ export function Server(options: any, listener: any) {
 }
 
 export class ServerImpl extends EventEmitter {
-  listener?: Deno.TlsListener;
+  listener?: system.TlsListener;
   #closed = false;
   constructor(public options: any, listener: any) {
     super();
@@ -256,24 +256,24 @@ export class ServerImpl extends EventEmitter {
     // TODO(kt3k): The default host should be "localhost"
     const hostname = this.options.host ?? "0.0.0.0";
 
-    this.listener = Deno.listenTls({ port, hostname, cert, key });
+    this.listener = system.listenTls({ port, hostname, cert, key });
 
     callback?.call(this);
     this.#listen(this.listener);
     return this;
   }
 
-  async #listen(listener: Deno.TlsListener) {
+  async #listen(listener: system.TlsListener) {
     while (!this.#closed) {
       try {
-        // Creates TCP handle and socket directly from Deno.TlsConn.
+        // Creates TCP handle and socket directly from system.TlsConn.
         // This works as TLS socket. We don't use TLSSocket class for doing
-        // this because Deno.startTls only supports client side tcp connection.
+        // this because system.startTls only supports client side tcp connection.
         const handle = new TCP(TCPConstants.SOCKET, await listener.accept());
         const socket = new net.Socket({ handle });
         this.emit("secureConnection", socket);
       } catch (e) {
-        if (e instanceof Deno.errors.BadResource) {
+        if (e instanceof system.errors.BadResource) {
           this.#closed = true;
         }
         // swallow
@@ -293,7 +293,7 @@ export class ServerImpl extends EventEmitter {
   }
 
   address() {
-    const addr = this.listener!.addr as Deno.NetAddr;
+    const addr = this.listener!.addr as system.NetAddr;
     return {
       port: addr.port,
       address: addr.hostname,
@@ -431,7 +431,7 @@ function unfqdn(host: string): string {
 }
 
 // Order matters. Mirrors ALL_CIPHER_SUITES from rustls/src/suites.rs but
-// using openssl cipher names instead. Mutable in Node but not (yet) in Deno.
+// using openssl cipher names instead. Mutable in Node but not (yet) in system.
 export const DEFAULT_CIPHERS = [
   // TLSv1.3 suites
   "AES256-GCM-SHA384",

@@ -70,7 +70,7 @@ export function readlink(
   const encoding = getEncoding(optOrCallback);
 
   intoCallbackAPIWithIntercept<string, Uint8Array | string>(
-    Deno.readLink,
+    system.readLink,
     (data: string): string | Uint8Array => maybeEncode(data, encoding),
     cb,
     path,
@@ -88,5 +88,5 @@ export function readlinkSync(
 ): string | Uint8Array {
   path = path instanceof URL ? pathFromURL(path) : path;
 
-  return maybeEncode(Deno.readLinkSync(path), getEncoding(opt));
+  return maybeEncode(system.readLinkSync(path), getEncoding(opt));
 }

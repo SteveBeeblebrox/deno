@@ -54,7 +54,7 @@ export function formatToCronSchedule(
 }
 
 export function parseScheduleToString(
-  schedule: string | Deno.CronSchedule,
+  schedule: string | system.CronSchedule,
 ): string {
   if (typeof schedule === "string") {
     return schedule;
@@ -96,17 +96,17 @@ export function parseScheduleToString(
 
 function cron(
   name: string,
-  schedule: string | Deno.CronSchedule,
+  schedule: string | system.CronSchedule,
   handlerOrOptions1:
     | (() => Promise<void> | void)
     | ({ backoffSchedule?: number[]; signal?: AbortSignal }),
   handler2?: () => Promise<void> | void,
 ) {
   if (name === undefined) {
-    throw new TypeError("Deno.cron requires a unique name");
+    throw new TypeError("system.cron requires a unique name");
   }
   if (schedule === undefined) {
-    throw new TypeError("Deno.cron requires a valid schedule");
+    throw new TypeError("system.cron requires a valid schedule");
   }
 
   schedule = parseScheduleToString(schedule);
@@ -119,13 +119,13 @@ function cron(
   if (typeof handlerOrOptions1 === "function") {
     handler = handlerOrOptions1;
     if (handler2 !== undefined) {
-      throw new TypeError("Deno.cron requires a single handler");
+      throw new TypeError("system.cron requires a single handler");
     }
   } else if (typeof handler2 === "function") {
     handler = handler2;
     options = handlerOrOptions1;
   } else {
-    throw new TypeError("Deno.cron requires a handler");
+    throw new TypeError("system.cron requires a handler");
   }
 
   const rid = op_cron_create(

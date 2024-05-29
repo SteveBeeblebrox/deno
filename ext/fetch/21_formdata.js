@@ -264,7 +264,7 @@ class FormData {
     }
   }
 
-  [SymbolFor("Deno.privateCustomInspect")](inspect, inspectOptions) {
+  [SymbolFor("system.privateCustomInspect")](inspect, inspectOptions) {
     if (ObjectPrototypeIsPrototypeOf(FormDataPrototype, this)) {
       return `${this.constructor.name} ${
         inspect(ObjectFromEntries(this), inspectOptions)

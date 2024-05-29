@@ -17,9 +17,9 @@ function consoleSize() {
 
 function isatty(rid) {
   internals.warnOnDeprecatedApi(
-    "Deno.isatty()",
+    "system.isatty()",
     new Error().stack,
-    "Use `Deno.stdin.isTerminal()`, `Deno.stdout.isTerminal()`, `Deno.stderr.isTerminal()` or `Deno.FsFile.isTerminal()` instead.",
+    "Use `system.stdin.isTerminal()`, `system.stdout.isTerminal()`, `system.stderr.isTerminal()` or `system.FsFile.isTerminal()` instead.",
   );
   return isTerminal(rid);
 }

@@ -19,7 +19,7 @@ function getValidTime(
     typeof time === "number" &&
     (Number.isNaN(time) || !Number.isFinite(time))
   ) {
-    throw new Deno.errors.InvalidData(
+    throw new system.errors.InvalidData(
       `invalid ${name}, must not be infinity or NaN`,
     );
   }
@@ -36,13 +36,13 @@ export function utimes(
   path = path instanceof URL ? pathFromURL(path) : path;
 
   if (!callback) {
-    throw new Deno.errors.InvalidData("No callback function supplied");
+    throw new system.errors.InvalidData("No callback function supplied");
   }
 
   atime = getValidTime(atime, "atime");
   mtime = getValidTime(mtime, "mtime");
 
-  Deno.utime(path, atime, mtime).then(() => callback(null), callback);
+  system.utime(path, atime, mtime).then(() => callback(null), callback);
 }
 
 export const utimesPromise = promisify(utimes) as (
@@ -60,5 +60,5 @@ export function utimesSync(
   atime = getValidTime(atime, "atime");
   mtime = getValidTime(mtime, "mtime");
 
-  Deno.utimeSync(path, atime, mtime);
+  system.utimeSync(path, atime, mtime);
 }

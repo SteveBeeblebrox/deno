@@ -141,7 +141,7 @@ where
     // once we phase out `check_or_exit_with_legacy_fallback`
     state
       .feature_checker
-      .check_or_exit_with_legacy_fallback(UNSTABLE_FEATURE_NAME, "Deno.openKv");
+      .check_or_exit_with_legacy_fallback(UNSTABLE_FEATURE_NAME, "system.openKv");
     state.borrow::<Rc<DBH>>().clone()
   };
   let db = handler.open(state.clone(), path).await?;

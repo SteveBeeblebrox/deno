@@ -85,7 +85,7 @@ export function getaddrinfo(
   (async () => {
     await Promise.allSettled(
       recordTypes.map((recordType) =>
-        Deno.resolveDns(hostname, recordType).then((records) => {
+        system.resolveDns(hostname, recordType).then((records) => {
           records.forEach((record) => addresses.push(record));
         })
       ),
@@ -194,11 +194,11 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
     this.#tries = tries;
   }
 
-  async #query(query: string, recordType: Deno.RecordType) {
+  async #query(query: string, recordType: system.RecordType) {
     // TODO(@bartlomieju): TTL logic.
 
     let code: number;
-    let ret: Awaited<ReturnType<typeof Deno.resolveDns>>;
+    let ret: Awaited<ReturnType<typeof system.resolveDns>>;
 
     if (this.#servers.length) {
       for (const [ipAddr, port] of this.#servers) {
@@ -228,19 +228,19 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
 
   async #resolve(
     query: string,
-    recordType: Deno.RecordType,
-    resolveOptions?: Deno.ResolveDnsOptions,
+    recordType: system.RecordType,
+    resolveOptions?: system.ResolveDnsOptions,
   ): Promise<{
     code: number;
-    ret: Awaited<ReturnType<typeof Deno.resolveDns>>;
+    ret: Awaited<ReturnType<typeof system.resolveDns>>;
   }> {
-    let ret: Awaited<ReturnType<typeof Deno.resolveDns>> = [];
+    let ret: Awaited<ReturnType<typeof system.resolveDns>> = [];
     let code = 0;
 
     try {
-      ret = await Deno.resolveDns(query, recordType, resolveOptions);
+      ret = await system.resolveDns(query, recordType, resolveOptions);
     } catch (e) {
-      if (e instanceof Deno.errors.NotFound) {
+      if (e instanceof system.errors.NotFound) {
         code = codeMap.get("EAI_NODATA")!;
       } else {
         // TODO(cmorten): map errors to appropriate error codes.
@@ -258,7 +258,7 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
     // Ideally we move to using the "ANY" / "*" DNS query in future
     // REF: https://github.com/denoland/deno/issues/14492
     (async () => {
-      const records: { type: Deno.RecordType; [key: string]: unknown }[] = [];
+      const records: { type: system.RecordType; [key: string]: unknown }[] = [];
 
       await Promise.allSettled([
         this.#query(name, "A").then(({ ret }) => {
@@ -270,7 +270,7 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
           );
         }),
         this.#query(name, "CAA").then(({ ret }) => {
-          (ret as Deno.CAARecord[]).forEach(({ critical, tag, value }) =>
+          (ret as system.CAARecord[]).forEach(({ critical, tag, value }) =>
             records.push({
               type: "CAA",
               [tag]: value,
@@ -284,7 +284,7 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
           );
         }),
         this.#query(name, "MX").then(({ ret }) => {
-          (ret as Deno.MXRecord[]).forEach(({ preference, exchange }) =>
+          (ret as system.MXRecord[]).forEach(({ preference, exchange }) =>
             records.push({
               type: "MX",
               priority: preference,
@@ -293,7 +293,7 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
           );
         }),
         this.#query(name, "NAPTR").then(({ ret }) => {
-          (ret as Deno.NAPTRRecord[]).forEach(
+          (ret as system.NAPTRRecord[]).forEach(
             ({ order, preference, flags, services, regexp, replacement }) =>
               records.push({
                 type: "NAPTR",
@@ -317,7 +317,7 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
           );
         }),
         this.#query(name, "SOA").then(({ ret }) => {
-          (ret as Deno.SOARecord[]).forEach(
+          (ret as system.SOARecord[]).forEach(
             ({ mname, rname, serial, refresh, retry, expire, minimum }) =>
               records.push({
                 type: "SOA",
@@ -332,7 +332,7 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
           );
         }),
         this.#query(name, "SRV").then(({ ret }) => {
-          (ret as Deno.SRVRecord[]).forEach(
+          (ret as system.SRVRecord[]).forEach(
             ({ priority, weight, port, target }) =>
               records.push({
                 type: "SRV",
@@ -378,7 +378,7 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
 
   queryCaa(req: QueryReqWrap, name: string): number {
     this.#query(name, "CAA").then(({ code, ret }) => {
-      const records = (ret as Deno.CAARecord[]).map(
+      const records = (ret as system.CAARecord[]).map(
         ({ critical, tag, value }) => ({
           [tag]: value,
           critical: +critical && 128,
@@ -401,7 +401,7 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
 
   queryMx(req: QueryReqWrap, name: string): number {
     this.#query(name, "MX").then(({ code, ret }) => {
-      const records = (ret as Deno.MXRecord[]).map(
+      const records = (ret as system.MXRecord[]).map(
         ({ preference, exchange }) => ({
           priority: preference,
           exchange: fqdnToHostname(exchange),
@@ -416,7 +416,7 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
 
   queryNaptr(req: QueryReqWrap, name: string): number {
     this.#query(name, "NAPTR").then(({ code, ret }) => {
-      const records = (ret as Deno.NAPTRRecord[]).map(
+      const records = (ret as system.NAPTRRecord[]).map(
         ({ order, preference, flags, services, regexp, replacement }) => ({
           flags,
           service: services,
@@ -459,7 +459,7 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
 
       if (ret.length) {
         const { mname, rname, serial, refresh, retry, expire, minimum } =
-          ret[0] as Deno.SOARecord;
+          ret[0] as system.SOARecord;
 
         record = {
           nsname: fqdnToHostname(mname),
@@ -480,7 +480,7 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
 
   querySrv(req: QueryReqWrap, name: string): number {
     this.#query(name, "SRV").then(({ code, ret }) => {
-      const records = (ret as Deno.SRVRecord[]).map(
+      const records = (ret as system.SRVRecord[]).map(
         ({ priority, weight, port, target }) => ({
           priority,
           weight,

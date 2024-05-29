@@ -491,7 +491,7 @@ fn spawn_child(
 ) -> Result<Child, AnyError> {
   let mut command = tokio::process::Command::from(command);
   // TODO(@crowlkats): allow detaching processes.
-  //  currently deno will orphan a process when exiting with an error or Deno.exit()
+  //  currently deno will orphan a process when exiting with an error or system.exit()
   // We want to kill child when it's closed
   command.kill_on_drop(true);
 
@@ -611,7 +611,7 @@ fn op_spawn_sync(
   let stdout = matches!(args.stdio.stdout, Stdio::Piped);
   let stderr = matches!(args.stdio.stderr, Stdio::Piped);
   let (mut command, _) =
-    create_command(state, args, "Deno.Command().outputSync()")?;
+    create_command(state, args, "system.Command().outputSync()")?;
   let output = command.output().with_context(|| {
     format!(
       "Failed to spawn '{}'",
@@ -702,7 +702,7 @@ mod deprecated {
     let args = run_args.cmd;
     state
       .borrow_mut::<PermissionsContainer>()
-      .check_run(&args[0], "Deno.run()")?;
+      .check_run(&args[0], "system.run()")?;
     let env = run_args.env;
     let cwd = run_args.cwd;
 
@@ -714,7 +714,7 @@ mod deprecated {
     cwd.map(|d| c.current_dir(d));
 
     if run_args.clear_env {
-      super::check_unstable(state, UNSTABLE_FEATURE_NAME, "Deno.run.clearEnv");
+      super::check_unstable(state, UNSTABLE_FEATURE_NAME, "system.run.clearEnv");
       c.env_clear();
     }
     for (key, value) in &env {
@@ -723,12 +723,12 @@ mod deprecated {
 
     #[cfg(unix)]
     if let Some(gid) = run_args.gid {
-      super::check_unstable(state, UNSTABLE_FEATURE_NAME, "Deno.run.gid");
+      super::check_unstable(state, UNSTABLE_FEATURE_NAME, "system.run.gid");
       c.gid(gid);
     }
     #[cfg(unix)]
     if let Some(uid) = run_args.uid {
-      super::check_unstable(state, UNSTABLE_FEATURE_NAME, "Deno.run.uid");
+      super::check_unstable(state, UNSTABLE_FEATURE_NAME, "system.run.uid");
       c.uid(uid);
     }
     #[cfg(unix)]

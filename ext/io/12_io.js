@@ -39,7 +39,7 @@ async function copy(
   options,
 ) {
   internals.warnOnDeprecatedApi(
-    "Deno.copy()",
+    "system.copy()",
     new Error().stack,
     "Use `copy()` from `https://jsr.io/@std/io/doc/copy/~` instead.",
   );
@@ -69,7 +69,7 @@ async function* iter(
   options,
 ) {
   internals.warnOnDeprecatedApi(
-    "Deno.iter()",
+    "system.iter()",
     new Error().stack,
     "Use `ReadableStream` instead.",
   );
@@ -90,7 +90,7 @@ function* iterSync(
   options,
 ) {
   internals.warnOnDeprecatedApi(
-    "Deno.iterSync()",
+    "system.iterSync()",
     new Error().stack,
     "Use `ReadableStream` instead.",
   );
@@ -196,9 +196,9 @@ class Stdin {
 
   get rid() {
     internals.warnOnDeprecatedApi(
-      "Deno.stdin.rid",
+      "system.stdin.rid",
       new Error().stack,
-      "Use `Deno.stdin` instance methods instead.",
+      "Use `system.stdin` instance methods instead.",
     );
     return this.#rid;
   }
@@ -261,9 +261,9 @@ class Stdout {
 
   get rid() {
     internals.warnOnDeprecatedApi(
-      "Deno.stdout.rid",
+      "system.stdout.rid",
       new Error().stack,
-      "Use `Deno.stdout` instance methods instead.",
+      "Use `system.stdout` instance methods instead.",
     );
     return this.#rid;
   }
@@ -301,9 +301,9 @@ class Stderr {
 
   get rid() {
     internals.warnOnDeprecatedApi(
-      "Deno.stderr.rid",
+      "system.stderr.rid",
       new Error().stack,
-      "Use `Deno.stderr` instance methods instead.",
+      "Use `system.stderr` instance methods instead.",
     );
     return this.#rid;
   }

@@ -122,7 +122,7 @@ function upgradeHttpRaw(req, conn) {
   if (inner._wantsUpgrade) {
     return inner._wantsUpgrade("upgradeHttpRaw", conn);
   }
-  throw new TypeError("upgradeHttpRaw may only be used with Deno.serve");
+  throw new TypeError("upgradeHttpRaw may only be used with system.serve");
 }
 
 function addTrailers(resp, headerList) {
@@ -169,10 +169,10 @@ class InnerRequest {
 
   _wantsUpgrade(upgradeType, ...originalArgs) {
     if (this.#upgraded) {
-      throw new Deno.errors.Http("already upgraded");
+      throw new system.errors.Http("already upgraded");
     }
     if (this.#external === null) {
-      throw new Deno.errors.Http("already closed");
+      throw new system.errors.Http("already closed");
     }
 
     // upgradeHttpRaw is sync
@@ -606,7 +606,7 @@ function serve(arg1, arg2) {
     const listener = listen({
       transport: "unix",
       path: options.path,
-      [listenOptionApiName]: "Deno.serve",
+      [listenOptionApiName]: "system.serve",
     });
     const path = listener.addr.path;
     return serveHttpOnListener(listener, signal, handler, onError, () => {
@@ -709,7 +709,7 @@ function serveHttpOn(context, addr, callback) {
   const promiseErrorHandler = (error) => {
     // Abnormal exit
     console.error(
-      "Terminating Deno.serve loop due to unexpected error",
+      "Terminating system.serve loop due to unexpected error",
       error,
     );
     context.close();
@@ -739,7 +739,7 @@ function serveHttpOn(context, addr, callback) {
         if (ObjectPrototypeIsPrototypeOf(InterruptedPrototype, error)) {
           break;
         }
-        throw new Deno.errors.Http(error);
+        throw new system.errors.Http(error);
       }
       if (req === null) {
         break;
@@ -799,7 +799,7 @@ function registerDeclarativeServer(exports) {
       );
     }
     return ({ servePort, serveHost }) => {
-      Deno.serve({
+      system.serve({
         port: servePort,
         hostname: serveHost,
         onListen: ({ port, hostname }) => {

@@ -46,8 +46,8 @@ import { SymbolDispose } from "ext:deno_web/00_infra.js";
 import { ReadableStream } from "ext:deno_web/06_streams.js";
 
 const encodeCursor: (
-  selector: [Deno.KvKey | null, Deno.KvKey | null, Deno.KvKey | null],
-  boundaryKey: Deno.KvKey,
+  selector: [system.KvKey | null, system.KvKey | null, system.KvKey | null],
+  boundaryKey: system.KvKey,
 ) => string = (selector, boundaryKey) =>
   op_kv_encode_cursor(selector, boundaryKey);
 
@@ -89,7 +89,7 @@ function validateBackoffSchedule(backoffSchedule: number[]) {
 }
 
 interface RawKvEntry {
-  key: Deno.KvKey;
+  key: system.KvKey;
   value: RawValue;
   versionstamp: string;
 }
@@ -115,7 +115,7 @@ class Kv {
   constructor(rid: number = undefined, symbol: symbol = undefined) {
     if (kvSymbol !== symbol) {
       throw new TypeError(
-        "Deno.Kv can not be constructed, use Deno.openKv instead.",
+        "system.Kv can not be constructed, use system.openKv instead.",
       );
     }
     this.#rid = rid;
@@ -130,7 +130,7 @@ class Kv {
     return commitVersionstampSymbol;
   }
 
-  async get(key: Deno.KvKey, opts?: { consistency?: Deno.KvConsistencyLevel }) {
+  async get(key: system.KvKey, opts?: { consistency?: system.KvConsistencyLevel }) {
     const { 0: entries }: [RawKvEntry[]] = await op_kv_snapshot_read(
       this.#rid,
       [[
@@ -154,12 +154,12 @@ class Kv {
   }
 
   async getMany(
-    keys: Deno.KvKey[],
-    opts?: { consistency?: Deno.KvConsistencyLevel },
-  ): Promise<Deno.KvEntry<unknown>[]> {
+    keys: system.KvKey[],
+    opts?: { consistency?: system.KvConsistencyLevel },
+  ): Promise<system.KvEntry<unknown>[]> {
     const ranges: RawKvEntry[][] = await op_kv_snapshot_read(
       this.#rid,
-      ArrayPrototypeMap(keys, (key: Deno.KvKey) => [
+      ArrayPrototypeMap(keys, (key: system.KvKey) => [
         null,
         key,
         null,
@@ -181,7 +181,7 @@ class Kv {
     });
   }
 
-  async set(key: Deno.KvKey, value: unknown, options?: { expireIn?: number }) {
+  async set(key: system.KvKey, value: unknown, options?: { expireIn?: number }) {
     const versionstamp = await doAtomicWriteInPlace(
       this.#rid,
       [],
@@ -192,7 +192,7 @@ class Kv {
     return { ok: true, versionstamp };
   }
 
-  async delete(key: Deno.KvKey) {
+  async delete(key: system.KvKey) {
     const result = await doAtomicWriteInPlace(
       this.#rid,
       [],
@@ -203,13 +203,13 @@ class Kv {
   }
 
   list(
-    selector: Deno.KvListSelector,
+    selector: system.KvListSelector,
     options: {
       limit?: number;
       batchSize?: number;
       cursor?: string;
       reverse?: boolean;
-      consistency?: Deno.KvConsistencyLevel;
+      consistency?: system.KvConsistencyLevel;
     } = { __proto__: null },
   ): KvListIterator {
     if (options.limit !== undefined && options.limit <= 0) {
@@ -232,11 +232,11 @@ class Kv {
   }
 
   #pullBatch(batchSize: number): (
-    selector: Deno.KvListSelector,
+    selector: system.KvListSelector,
     cursor: string | undefined,
     reverse: boolean,
-    consistency: Deno.KvConsistencyLevel,
-  ) => Promise<Deno.KvEntry<unknown>[]> {
+    consistency: system.KvConsistencyLevel,
+  ) => Promise<system.KvEntry<unknown>[]> {
     return async (selector, cursor, reverse, consistency) => {
       const { 0: entries }: [RawKvEntry[]] = await op_kv_snapshot_read(
         this.#rid,
@@ -259,7 +259,7 @@ class Kv {
     message: unknown,
     opts?: {
       delay?: number;
-      keysIfUndelivered?: Deno.KvKey[];
+      keysIfUndelivered?: system.KvKey[];
       backoffSchedule?: number[];
     },
   ) {
@@ -340,10 +340,10 @@ class Kv {
     finishMessageOps.clear();
   }
 
-  watch(keys: Deno.KvKey[], options = { __proto__: null }) {
+  watch(keys: system.KvKey[], options = { __proto__: null }) {
     const raw = options.raw ?? false;
     const rid = op_kv_watch(this.#rid, keys);
-    const lastEntries: (Deno.KvEntryMaybe<unknown> | undefined)[] = ArrayFrom(
+    const lastEntries: (system.KvEntryMaybe<unknown> | undefined)[] = ArrayFrom(
       { length: keys.length },
     );
     return new ReadableStream({
@@ -421,15 +421,15 @@ class Kv {
 class AtomicOperation {
   #rid: number;
 
-  #checks: [Deno.KvKey, string | null][] = [];
-  #mutations: [Deno.KvKey, string, RawValue | null, number | undefined][] = [];
-  #enqueues: [Uint8Array, number, Deno.KvKey[], number[] | null][] = [];
+  #checks: [system.KvKey, string | null][] = [];
+  #mutations: [system.KvKey, string, RawValue | null, number | undefined][] = [];
+  #enqueues: [Uint8Array, number, system.KvKey[], number[] | null][] = [];
 
   constructor(rid: number) {
     this.#rid = rid;
   }
 
-  check(...checks: Deno.AtomicCheck[]): this {
+  check(...checks: system.AtomicCheck[]): this {
     for (let i = 0; i < checks.length; ++i) {
       const check = checks[i];
       ArrayPrototypePush(this.#checks, [check.key, check.versionstamp]);
@@ -437,7 +437,7 @@ class AtomicOperation {
     return this;
   }
 
-  mutate(...mutations: Deno.KvMutation[]): this {
+  mutate(...mutations: system.KvMutation[]): this {
     for (let i = 0; i < mutations.length; ++i) {
       const mutation = mutations[i];
       const key = mutation.key;
@@ -473,7 +473,7 @@ class AtomicOperation {
     return this;
   }
 
-  sum(key: Deno.KvKey, n: bigint): this {
+  sum(key: system.KvKey, n: bigint): this {
     ArrayPrototypePush(this.#mutations, [
       key,
       "sum",
@@ -483,7 +483,7 @@ class AtomicOperation {
     return this;
   }
 
-  min(key: Deno.KvKey, n: bigint): this {
+  min(key: system.KvKey, n: bigint): this {
     ArrayPrototypePush(this.#mutations, [
       key,
       "min",
@@ -493,7 +493,7 @@ class AtomicOperation {
     return this;
   }
 
-  max(key: Deno.KvKey, n: bigint): this {
+  max(key: system.KvKey, n: bigint): this {
     ArrayPrototypePush(this.#mutations, [
       key,
       "max",
@@ -504,7 +504,7 @@ class AtomicOperation {
   }
 
   set(
-    key: Deno.KvKey,
+    key: system.KvKey,
     value: unknown,
     options?: { expireIn?: number },
   ): this {
@@ -517,7 +517,7 @@ class AtomicOperation {
     return this;
   }
 
-  delete(key: Deno.KvKey): this {
+  delete(key: system.KvKey): this {
     ArrayPrototypePush(this.#mutations, [key, "delete", null, undefined]);
     return this;
   }
@@ -526,7 +526,7 @@ class AtomicOperation {
     message: unknown,
     opts?: {
       delay?: number;
-      keysIfUndelivered?: Deno.KvKey[];
+      keysIfUndelivered?: system.KvKey[];
       backoffSchedule?: number[];
     },
   ): this {
@@ -545,7 +545,7 @@ class AtomicOperation {
     return this;
   }
 
-  async commit(): Promise<Deno.KvCommitResult | Deno.KvCommitError> {
+  async commit(): Promise<system.KvCommitResult | system.KvCommitError> {
     const versionstamp = await doAtomicWriteInPlace(
       this.#rid,
       this.#checks,
@@ -558,7 +558,7 @@ class AtomicOperation {
 
   then() {
     throw new TypeError(
-      "`Deno.AtomicOperation` is not a promise. Did you forget to call `commit()`?",
+      "`system.AtomicOperation` is not a promise. Did you forget to call `commit()`?",
     );
   }
 }
@@ -592,19 +592,19 @@ class KvU64 {
   }
 
   get [SymbolToStringTag]() {
-    return "Deno.KvU64";
+    return "system.KvU64";
   }
 
-  [SymbolFor("Deno.privateCustomInspect")](inspect, inspectOptions) {
+  [SymbolFor("system.privateCustomInspect")](inspect, inspectOptions) {
     return StringPrototypeReplace(
       inspect(Object(this.value), inspectOptions),
       "BigInt",
-      "Deno.KvU64",
+      "system.KvU64",
     );
   }
 }
 
-function deserializeValue(entry: RawKvEntry): Deno.KvEntry<unknown> {
+function deserializeValue(entry: RawKvEntry): system.KvEntry<unknown> {
   const { kind, value } = entry.value;
   switch (kind) {
     case "v8":
@@ -658,44 +658,44 @@ const AsyncIteratorPrototype = ObjectGetPrototypeOf(AsyncGeneratorPrototype);
 const AsyncIterator = AsyncIteratorPrototype.constructor;
 
 class KvListIterator extends AsyncIterator
-  implements AsyncIterator<Deno.KvEntry<unknown>> {
-  #selector: Deno.KvListSelector;
-  #entries: Deno.KvEntry<unknown>[] | null = null;
+  implements AsyncIterator<system.KvEntry<unknown>> {
+  #selector: system.KvListSelector;
+  #entries: system.KvEntry<unknown>[] | null = null;
   #cursorGen: (() => string) | null = null;
   #done = false;
   #lastBatch = false;
   #pullBatch: (
-    selector: Deno.KvListSelector,
+    selector: system.KvListSelector,
     cursor: string | undefined,
     reverse: boolean,
-    consistency: Deno.KvConsistencyLevel,
-  ) => Promise<Deno.KvEntry<unknown>[]>;
+    consistency: system.KvConsistencyLevel,
+  ) => Promise<system.KvEntry<unknown>[]>;
   #limit: number | undefined;
   #count = 0;
   #reverse: boolean;
   #batchSize: number;
-  #consistency: Deno.KvConsistencyLevel;
+  #consistency: system.KvConsistencyLevel;
 
   constructor(
     { limit, selector, cursor, reverse, consistency, batchSize, pullBatch }: {
       limit?: number;
-      selector: Deno.KvListSelector;
+      selector: system.KvListSelector;
       cursor?: string;
       reverse: boolean;
       batchSize: number;
-      consistency: Deno.KvConsistencyLevel;
+      consistency: system.KvConsistencyLevel;
       pullBatch: (
-        selector: Deno.KvListSelector,
+        selector: system.KvListSelector,
         cursor: string | undefined,
         reverse: boolean,
-        consistency: Deno.KvConsistencyLevel,
-      ) => Promise<Deno.KvEntry<unknown>[]>;
+        consistency: system.KvConsistencyLevel,
+      ) => Promise<system.KvEntry<unknown>[]>;
     },
   ) {
     super();
-    let prefix: Deno.KvKey | undefined;
-    let start: Deno.KvKey | undefined;
-    let end: Deno.KvKey | undefined;
+    let prefix: system.KvKey | undefined;
+    let start: system.KvKey | undefined;
+    let end: system.KvKey | undefined;
     if (ObjectHasOwn(selector, "prefix") && selector.prefix !== undefined) {
       prefix = ObjectFreeze(ArrayPrototypeSlice(selector.prefix));
     }
@@ -744,7 +744,7 @@ class KvListIterator extends AsyncIterator
     return this.#cursorGen();
   }
 
-  async next(): Promise<IteratorResult<Deno.KvEntry<unknown>>> {
+  async next(): Promise<IteratorResult<system.KvEntry<unknown>>> {
     // Fused or limit exceeded
     if (
       this.#done ||
@@ -794,16 +794,16 @@ class KvListIterator extends AsyncIterator
     };
   }
 
-  [SymbolAsyncIterator](): AsyncIterator<Deno.KvEntry<unknown>> {
+  [SymbolAsyncIterator](): AsyncIterator<system.KvEntry<unknown>> {
     return this;
   }
 }
 
 async function doAtomicWriteInPlace(
   rid: number,
-  checks: [Deno.KvKey, string | null][],
-  mutations: [Deno.KvKey, string, RawValue | null, number | undefined][],
-  enqueues: [Uint8Array, number, Deno.KvKey[], number[] | null][],
+  checks: [system.KvKey, string | null][],
+  mutations: [system.KvKey, string, RawValue | null, number | undefined][],
+  enqueues: [Uint8Array, number, system.KvKey[], number[] | null][],
 ): Promise<string | null> {
   for (let i = 0; i < mutations.length; ++i) {
     const mutation = mutations[i];

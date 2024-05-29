@@ -155,7 +155,7 @@ export function fork(
     throw new ERR_CHILD_PROCESS_IPC_REQUIRED("options.stdio");
   }
 
-  options.execPath = options.execPath || Deno.execPath();
+  options.execPath = options.execPath || system.execPath();
   options.shell = false;
 
   Object.assign(options.env ??= {}, {

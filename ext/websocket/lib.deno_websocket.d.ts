@@ -47,7 +47,7 @@ declare interface WebSocketEventMap {
  * server, as well as for sending and receiving data on the connection.
  *
  * If you are looking to create a WebSocket server, please take a look at
- * `Deno.upgradeWebSocket()`.
+ * `system.upgradeWebSocket()`.
  *
  * @tags allow-net
  * @category WebSockets

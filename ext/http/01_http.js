@@ -397,9 +397,9 @@ function createRespondWith(
 
 function serveHttp(conn) {
   internals.warnOnDeprecatedApi(
-    "Deno.serveHttp()",
+    "system.serveHttp()",
     new Error().stack,
-    "Use `Deno.serve()` instead.",
+    "Use `system.serve()` instead.",
   );
   const rid = op_http_start(conn[internalRidSymbol]);
   return new HttpConn(rid, conn.remoteAddr, conn.localAddr);

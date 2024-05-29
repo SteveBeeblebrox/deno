@@ -107,12 +107,12 @@ export function checkEncoding(encoding: Encodings | null): Encodings | null {
 
 export function getOpenOptions(
   flag: string | number | undefined,
-): Deno.OpenOptions {
+): system.OpenOptions {
   if (flag === undefined) {
     return { create: true, append: true };
   }
 
-  let openOptions: Deno.OpenOptions = {};
+  let openOptions: system.OpenOptions = {};
 
   if (typeof flag === "string") {
     switch (flag) {

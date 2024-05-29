@@ -156,13 +156,13 @@ export function endianness(): "BE" | "LE" {
 
 /** Return free memory amount */
 export function freemem(): number {
-  if (Deno.build.os === "linux" || Deno.build.os == "android") {
+  if (system.build.os === "linux" || system.build.os == "android") {
     // On linux, use 'available' memory
     // https://github.com/libuv/libuv/blob/a5c01d4de3695e9d9da34cfd643b5ff0ba582ea7/src/unix/linux.c#L2064
-    return Deno.systemMemoryInfo().available;
+    return system.systemMemoryInfo().available;
   } else {
     // Use 'free' memory on other platforms
-    return Deno.systemMemoryInfo().free;
+    return system.systemMemoryInfo().free;
   }
 }
 
@@ -179,7 +179,7 @@ export function homedir(): string | null {
 
 /** Returns the host name of the operating system as a string. */
 export function hostname(): string {
-  return Deno.hostname();
+  return system.hostname();
 }
 
 /** Returns an array containing the 1, 5, and 15 minute load averages */
@@ -187,7 +187,7 @@ export function loadavg(): number[] {
   if (isWindows) {
     return [0, 0, 0];
   }
-  return Deno.loadavg();
+  return system.loadavg();
 }
 
 /** Returns an object containing network interfaces that have been assigned a network address.
@@ -231,23 +231,23 @@ export function platform(): string {
 
 /** Returns the operating system as a string */
 export function release(): string {
-  return Deno.osRelease();
+  return system.osRelease();
 }
 
 /** Returns a string identifying the kernel version */
 export function version(): string {
-  // TODO(kt3k): Temporarily uses Deno.osRelease().
+  // TODO(kt3k): Temporarily uses system.osRelease().
   // Revisit this if this implementation is insufficient for any npm module
-  return Deno.osRelease();
+  return system.osRelease();
 }
 
 /** Returns the machine type as a string */
 export function machine(): string {
-  if (Deno.build.arch == "aarch64") {
+  if (system.build.arch == "aarch64") {
     return "arm64";
   }
 
-  return Deno.build.arch;
+  return system.build.arch;
 }
 
 /** Not yet implemented */
@@ -270,35 +270,35 @@ export function tmpdir(): string | null {
      differences:
      * On windows, if none of the environment variables are defined,
        we return null.
-     * On unix we use a plain Deno.env.get, instead of safeGetenv,
+     * On unix we use a plain system.env.get, instead of safeGetenv,
        which special cases setuid binaries.
      * Node removes a single trailing / or \, we remove all.
   */
   if (isWindows) {
-    const temp = Deno.env.get("TEMP") || Deno.env.get("TMP");
+    const temp = system.env.get("TEMP") || system.env.get("TMP");
     if (temp) {
       return temp.replace(/(?<!:)[/\\]*$/, "");
     }
-    const base = Deno.env.get("SYSTEMROOT") || Deno.env.get("WINDIR");
+    const base = system.env.get("SYSTEMROOT") || system.env.get("WINDIR");
     if (base) {
       return base + "\\temp";
     }
     return null;
   } else { // !isWindows
-    const temp = Deno.env.get("TMPDIR") || Deno.env.get("TMP") ||
-      Deno.env.get("TEMP") || "/tmp";
+    const temp = system.env.get("TMPDIR") || system.env.get("TMP") ||
+      system.env.get("TEMP") || "/tmp";
     return temp.replace(/(?<!^)\/*$/, "");
   }
 }
 
 /** Return total physical memory amount */
 export function totalmem(): number {
-  return Deno.systemMemoryInfo().total;
+  return system.systemMemoryInfo().total;
 }
 
 /** Returns operating system type (i.e. 'Windows_NT', 'Linux', 'Darwin') */
 export function type(): string {
-  switch (Deno.build.os as string) {
+  switch (system.build.os as string) {
     case "windows":
       return "Windows_NT";
     case "linux":
@@ -324,8 +324,8 @@ export function uptime(): number {
 export function userInfo(
   options: UserInfoOptions = { encoding: "utf-8" },
 ): UserInfo {
-  let uid = Deno.uid();
-  let gid = Deno.gid();
+  let uid = system.uid();
+  let gid = system.gid();
 
   if (isWindows) {
     uid = -1;
@@ -340,7 +340,7 @@ export function userInfo(
   if (!_homedir) {
     throw new ERR_OS_NO_HOMEDIR();
   }
-  let shell = isWindows ? (Deno.env.get("SHELL") || null) : null;
+  let shell = isWindows ? (system.env.get("SHELL") || null) : null;
   let username = op_node_os_username();
 
   if (options?.encoding === "buffer") {

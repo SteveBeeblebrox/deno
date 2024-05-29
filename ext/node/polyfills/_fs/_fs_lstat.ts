@@ -42,7 +42,7 @@ export function lstat(
 
   if (!callback) throw new Error("No callback function supplied");
 
-  Deno.lstat(path).then(
+  system.lstat(path).then(
     (stat) => callback(null, CFISBIS(stat, options.bigint)),
     (err) => callback(err),
   );
@@ -68,12 +68,12 @@ export function lstatSync(
   options?: statOptions,
 ): Stats | BigIntStats {
   try {
-    const origin = Deno.lstatSync(path);
+    const origin = system.lstatSync(path);
     return CFISBIS(origin, options?.bigint || false);
   } catch (err) {
     if (
       options?.throwIfNoEntry === false &&
-      err instanceof Deno.errors.NotFound
+      err instanceof system.errors.NotFound
     ) {
       return;
     }

@@ -25,7 +25,7 @@ class Navigator {
     webidl.illegalConstructor();
   }
 
-  [SymbolFor("Deno.privateCustomInspect")](inspect, inspectOptions) {
+  [SymbolFor("system.privateCustomInspect")](inspect, inspectOptions) {
     return inspect(
       console.createFilteredInspectProxy({
         object: this,

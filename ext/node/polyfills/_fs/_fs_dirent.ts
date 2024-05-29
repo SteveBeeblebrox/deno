@@ -2,16 +2,16 @@
 import { notImplemented } from "ext:deno_node/_utils.ts";
 
 export default class Dirent {
-  constructor(private entry: Deno.DirEntry) {}
+  constructor(private entry: system.DirEntry) {}
 
   isBlockDevice(): boolean {
-    notImplemented("Deno does not yet support identification of block devices");
+    notImplemented("system does not yet support identification of block devices");
     return false;
   }
 
   isCharacterDevice(): boolean {
     notImplemented(
-      "Deno does not yet support identification of character devices",
+      "system does not yet support identification of character devices",
     );
     return false;
   }
@@ -22,7 +22,7 @@ export default class Dirent {
 
   isFIFO(): boolean {
     notImplemented(
-      "Deno does not yet support identification of FIFO named pipes",
+      "system does not yet support identification of FIFO named pipes",
     );
     return false;
   }
@@ -32,7 +32,7 @@ export default class Dirent {
   }
 
   isSocket(): boolean {
-    notImplemented("Deno does not yet support identification of sockets");
+    notImplemented("system does not yet support identification of sockets");
     return false;
   }
 

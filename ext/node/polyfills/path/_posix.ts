@@ -41,7 +41,7 @@ export function resolve(...pathSegments: string[]): string {
       if (typeof Deno?.cwd !== "function") {
         throw new TypeError("Resolved a relative path without a CWD.");
       }
-      path = Deno.cwd();
+      path = system.cwd();
     }
 
     assertPath(path);

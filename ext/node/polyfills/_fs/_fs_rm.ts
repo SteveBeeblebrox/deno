@@ -47,9 +47,9 @@ export function rm(
       if (err) {
         return callback(err);
       }
-      Deno.remove(path, { recursive: options?.recursive })
+      system.remove(path, { recursive: options?.recursive })
         .then((_) => callback(null), (err: unknown) => {
-          if (options?.force && err instanceof Deno.errors.NotFound) {
+          if (options?.force && err instanceof system.errors.NotFound) {
             callback(null);
           } else {
             callback(
@@ -71,9 +71,9 @@ export const rmPromise = promisify(rm) as (
 export function rmSync(path: string | URL, options?: rmOptions) {
   options = validateRmOptionsSync(path, options, false);
   try {
-    Deno.removeSync(path, { recursive: options?.recursive });
+    system.removeSync(path, { recursive: options?.recursive });
   } catch (err: unknown) {
-    if (options?.force && err instanceof Deno.errors.NotFound) {
+    if (options?.force && err instanceof system.errors.NotFound) {
       return;
     }
     if (err instanceof Error) {

@@ -100,7 +100,7 @@ export class WriteStream extends Socket {
       manualStart: true,
     });
 
-    const { columns, rows } = Deno.consoleSize();
+    const { columns, rows } = system.consoleSize();
     this.columns = columns;
     this.rows = rows;
     this.isTTY = true;

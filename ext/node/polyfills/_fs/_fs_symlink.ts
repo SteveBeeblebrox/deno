@@ -28,7 +28,7 @@ export function symlink(
 
   if (!callback) throw new Error("No callback function supplied");
 
-  Deno.symlink(target, path, { type }).then(() => callback(null), callback);
+  system.symlink(target, path, { type }).then(() => callback(null), callback);
 }
 
 export const symlinkPromise = promisify(symlink) as (
@@ -46,5 +46,5 @@ export function symlinkSync(
   path = path instanceof URL ? pathFromURL(path) : path;
   type = type || "file";
 
-  Deno.symlinkSync(target, path, { type });
+  system.symlinkSync(target, path, { type });
 }

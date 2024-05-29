@@ -221,7 +221,7 @@ impl UnitPermission {
         == permission_prompt(
           &format!("access to {}", self.description),
           self.name,
-          Some("Deno.permissions.query()"),
+          Some("system.permissions.query()"),
           false,
         )
       {
@@ -482,7 +482,7 @@ impl<T: Descriptor + Hash> UnaryPermission<T> {
     match permission_prompt(
       &message,
       T::flag_name(),
-      Some("Deno.permissions.request()"),
+      Some("system.permissions.request()"),
       true,
     ) {
       PromptResponse::Allow => {

@@ -77,7 +77,7 @@ fn op_exec_path(state: &mut OpState) -> Result<String, AnyError> {
   let current_exe = env::current_exe().unwrap();
   state
     .borrow_mut::<PermissionsContainer>()
-    .check_read_blind(&current_exe, "exec_path", "Deno.execPath()")?;
+    .check_read_blind(&current_exe, "exec_path", "system.execPath()")?;
   // Now apply URL parser to current exe to get fully resolved path, otherwise
   // we might get `./` and `../` bits in `exec_path`
   let exe_url = Url::from_file_path(current_exe).unwrap();
@@ -175,7 +175,7 @@ fn op_exit(state: &mut OpState) {
 fn op_loadavg(state: &mut OpState) -> Result<(f64, f64, f64), AnyError> {
   state
     .borrow_mut::<PermissionsContainer>()
-    .check_sys("loadavg", "Deno.loadavg()")?;
+    .check_sys("loadavg", "system.loadavg()")?;
   Ok(sys_info::loadavg())
 }
 
@@ -184,7 +184,7 @@ fn op_loadavg(state: &mut OpState) -> Result<(f64, f64, f64), AnyError> {
 fn op_hostname(state: &mut OpState) -> Result<String, AnyError> {
   state
     .borrow_mut::<PermissionsContainer>()
-    .check_sys("hostname", "Deno.hostname()")?;
+    .check_sys("hostname", "system.hostname()")?;
   Ok(sys_info::hostname())
 }
 
@@ -193,7 +193,7 @@ fn op_hostname(state: &mut OpState) -> Result<String, AnyError> {
 fn op_os_release(state: &mut OpState) -> Result<String, AnyError> {
   state
     .borrow_mut::<PermissionsContainer>()
-    .check_sys("osRelease", "Deno.osRelease()")?;
+    .check_sys("osRelease", "system.osRelease()")?;
   Ok(sys_info::os_release())
 }
 
@@ -204,7 +204,7 @@ fn op_network_interfaces(
 ) -> Result<Vec<NetworkInterface>, AnyError> {
   state
     .borrow_mut::<PermissionsContainer>()
-    .check_sys("networkInterfaces", "Deno.networkInterfaces()")?;
+    .check_sys("networkInterfaces", "system.networkInterfaces()")?;
   Ok(netif::up()?.map(NetworkInterface::from).collect())
 }
 
@@ -256,7 +256,7 @@ fn op_system_memory_info(
 ) -> Result<Option<sys_info::MemInfo>, AnyError> {
   state
     .borrow_mut::<PermissionsContainer>()
-    .check_sys("systemMemoryInfo", "Deno.systemMemoryInfo()")?;
+    .check_sys("systemMemoryInfo", "system.systemMemoryInfo()")?;
   Ok(sys_info::mem_info())
 }
 
@@ -266,7 +266,7 @@ fn op_system_memory_info(
 fn op_gid(state: &mut OpState) -> Result<Option<u32>, AnyError> {
   state
     .borrow_mut::<PermissionsContainer>()
-    .check_sys("gid", "Deno.gid()")?;
+    .check_sys("gid", "system.gid()")?;
   // TODO(bartlomieju):
   #[allow(clippy::undocumented_unsafe_blocks)]
   unsafe {
@@ -280,7 +280,7 @@ fn op_gid(state: &mut OpState) -> Result<Option<u32>, AnyError> {
 fn op_gid(state: &mut OpState) -> Result<Option<u32>, AnyError> {
   state
     .borrow_mut::<PermissionsContainer>()
-    .check_sys("gid", "Deno.gid()")?;
+    .check_sys("gid", "system.gid()")?;
   Ok(None)
 }
 
@@ -290,7 +290,7 @@ fn op_gid(state: &mut OpState) -> Result<Option<u32>, AnyError> {
 fn op_uid(state: &mut OpState) -> Result<Option<u32>, AnyError> {
   state
     .borrow_mut::<PermissionsContainer>()
-    .check_sys("uid", "Deno.uid()")?;
+    .check_sys("uid", "system.uid()")?;
   // TODO(bartlomieju):
   #[allow(clippy::undocumented_unsafe_blocks)]
   unsafe {
@@ -304,7 +304,7 @@ fn op_uid(state: &mut OpState) -> Result<Option<u32>, AnyError> {
 fn op_uid(state: &mut OpState) -> Result<Option<u32>, AnyError> {
   state
     .borrow_mut::<PermissionsContainer>()
-    .check_sys("uid", "Deno.uid()")?;
+    .check_sys("uid", "system.uid()")?;
   Ok(None)
 }
 
@@ -482,7 +482,7 @@ fn rss() -> usize {
 fn os_uptime(state: &mut OpState) -> Result<u64, AnyError> {
   state
     .borrow_mut::<PermissionsContainer>()
-    .check_sys("osUptime", "Deno.osUptime()")?;
+    .check_sys("osUptime", "system.osUptime()")?;
   Ok(sys_info::os_uptime())
 }
 

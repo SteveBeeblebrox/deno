@@ -140,7 +140,7 @@ where
 {
   let path = args.path;
 
-  check_unstable(state, "Deno.dlopen");
+  check_unstable(state, "system.dlopen");
   let permissions = state.borrow_mut::<FP>();
   permissions.check_partial(Some(&PathBuf::from(&path)))?;
 

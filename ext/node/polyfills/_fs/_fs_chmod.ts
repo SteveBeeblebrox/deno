@@ -20,19 +20,19 @@ export function chmod(
   try {
     mode = parseFileMode(mode, "mode");
   } catch (error) {
-    // TODO(PolarETech): Errors should not be ignored when Deno.chmod is supported on Windows.
+    // TODO(PolarETech): Errors should not be ignored when system.chmod is supported on Windows.
     // https://github.com/denoland/deno_std/issues/2916
-    if (Deno.build.os === "windows") {
-      mode = 0; // set dummy value to avoid type checking error at Deno.chmod
+    if (system.build.os === "windows") {
+      mode = 0; // set dummy value to avoid type checking error at system.chmod
     } else {
       throw error;
     }
   }
 
-  Deno.chmod(pathModule.toNamespacedPath(path), mode).catch((error) => {
+  system.chmod(pathModule.toNamespacedPath(path), mode).catch((error) => {
     // Ignore NotSupportedError that occurs on windows
     // https://github.com/denoland/deno_std/issues/2995
-    if (!(error instanceof Deno.errors.NotSupported)) {
+    if (!(error instanceof system.errors.NotSupported)) {
       throw error;
     }
   }).then(
@@ -52,21 +52,21 @@ export function chmodSync(path: string | URL, mode: string | number) {
   try {
     mode = parseFileMode(mode, "mode");
   } catch (error) {
-    // TODO(PolarETech): Errors should not be ignored when Deno.chmodSync is supported on Windows.
+    // TODO(PolarETech): Errors should not be ignored when system.chmodSync is supported on Windows.
     // https://github.com/denoland/deno_std/issues/2916
-    if (Deno.build.os === "windows") {
-      mode = 0; // set dummy value to avoid type checking error at Deno.chmodSync
+    if (system.build.os === "windows") {
+      mode = 0; // set dummy value to avoid type checking error at system.chmodSync
     } else {
       throw error;
     }
   }
 
   try {
-    Deno.chmodSync(pathModule.toNamespacedPath(path), mode);
+    system.chmodSync(pathModule.toNamespacedPath(path), mode);
   } catch (error) {
     // Ignore NotSupportedError that occurs on windows
     // https://github.com/denoland/deno_std/issues/2995
-    if (!(error instanceof Deno.errors.NotSupported)) {
+    if (!(error instanceof system.errors.NotSupported)) {
       throw error;
     }
   }

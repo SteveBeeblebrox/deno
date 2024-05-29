@@ -79,7 +79,7 @@ export class UDP extends HandleWrap {
   #remoteFamily?: string;
   #remotePort?: number;
 
-  #listener?: Deno.DatagramConn;
+  #listener?: system.DatagramConn;
   #receiving = false;
   #unrefed = false;
 
@@ -335,13 +335,13 @@ export class UDP extends HandleWrap {
     let listener;
 
     try {
-      listener = DenoListenDatagram(listenOptions);
+      listener = systemListenDatagram(listenOptions);
     } catch (e) {
-      if (e instanceof Deno.errors.AddrInUse) {
+      if (e instanceof system.errors.AddrInUse) {
         return codeMap.get("EADDRINUSE")!;
-      } else if (e instanceof Deno.errors.AddrNotAvailable) {
+      } else if (e instanceof system.errors.AddrNotAvailable) {
         return codeMap.get("EADDRNOTAVAIL")!;
-      } else if (e instanceof Deno.errors.PermissionDenied) {
+      } else if (e instanceof system.errors.PermissionDenied) {
         throw e;
       }
 
@@ -349,7 +349,7 @@ export class UDP extends HandleWrap {
       return codeMap.get("UNKNOWN")!;
     }
 
-    const address = listener.addr as Deno.NetAddr;
+    const address = listener.addr as system.NetAddr;
     this.#address = address.hostname;
     this.#port = address.port;
     this.#family = family === AF_INET6 ? ("IPv6" as const) : ("IPv4" as const);
@@ -385,13 +385,13 @@ export class UDP extends HandleWrap {
       hasCallback = args[0] as boolean;
     }
 
-    const addr: Deno.NetAddr = {
+    const addr: system.NetAddr = {
       hostname: this.#remoteAddress!,
       port: this.#remotePort!,
       transport: "udp",
     };
 
-    // Deno.DatagramConn.prototype.send accepts only one Uint8Array
+    // system.DatagramConn.prototype.send accepts only one Uint8Array
     const payload = new Uint8Array(
       Buffer.concat(
         bufs.map((buf) => {
@@ -412,7 +412,7 @@ export class UDP extends HandleWrap {
         sent = await this.#listener!.send(payload, addr);
       } catch (e) {
         // TODO(cmorten): map errors to appropriate error codes.
-        if (e instanceof Deno.errors.BadResource) {
+        if (e instanceof system.errors.BadResource) {
           err = codeMap.get("EBADF")!;
         } else if (
           e instanceof Error &&
@@ -446,7 +446,7 @@ export class UDP extends HandleWrap {
     const p = new Uint8Array(this.#recvBufferSize);
 
     let buf: Uint8Array;
-    let remoteAddr: Deno.NetAddr | null;
+    let remoteAddr: system.NetAddr | null;
     let nread: number | null;
 
     if (this.#unrefed) {
@@ -456,15 +456,15 @@ export class UDP extends HandleWrap {
     try {
       [buf, remoteAddr] = (await this.#listener!.receive(p)) as [
         Uint8Array,
-        Deno.NetAddr,
+        system.NetAddr,
       ];
 
       nread = buf.length;
     } catch (e) {
       // TODO(cmorten): map errors to appropriate error codes.
       if (
-        e instanceof Deno.errors.Interrupted ||
-        e instanceof Deno.errors.BadResource
+        e instanceof system.errors.Interrupted ||
+        e instanceof system.errors.BadResource
       ) {
         nread = 0;
       } else {

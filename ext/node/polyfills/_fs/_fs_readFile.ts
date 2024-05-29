@@ -73,10 +73,10 @@ export function readFile(
 
   let p: Promise<Uint8Array>;
   if (path instanceof FileHandle) {
-    const fsFile = new FsFile(path.fd, Symbol.for("Deno.internal.FsFile"));
+    const fsFile = new FsFile(path.fd, Symbol.for("system.internal.FsFile"));
     p = readAll(fsFile);
   } else {
-    p = Deno.readFile(path);
+    p = system.readFile(path);
   }
 
   if (cb) {
@@ -117,7 +117,7 @@ export function readFileSync(
   opt?: FileOptionsArgument,
 ): string | Buffer {
   path = path instanceof URL ? pathFromURL(path) : path;
-  const data = Deno.readFileSync(path);
+  const data = system.readFileSync(path);
   const encoding = getEncoding(opt);
   if (encoding && encoding !== "binary") {
     const text = maybeDecode(data, encoding);

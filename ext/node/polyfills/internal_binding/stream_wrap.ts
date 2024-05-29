@@ -328,13 +328,13 @@ export class LibuvStreamWrap extends HandleWrap {
       }
 
       if (
-        e instanceof Deno.errors.Interrupted ||
-        e instanceof Deno.errors.BadResource
+        e instanceof system.errors.Interrupted ||
+        e instanceof system.errors.BadResource
       ) {
         nread = codeMap.get("EOF")!;
       } else if (
-        e instanceof Deno.errors.ConnectionReset ||
-        e instanceof Deno.errors.ConnectionAborted
+        e instanceof system.errors.ConnectionReset ||
+        e instanceof system.errors.ConnectionAborted
       ) {
         nread = codeMap.get("ECONNRESET")!;
       } else {
@@ -396,8 +396,8 @@ export class LibuvStreamWrap extends HandleWrap {
 
       // TODO(cmorten): map err to status codes
       if (
-        e instanceof Deno.errors.BadResource ||
-        e instanceof Deno.errors.BrokenPipe
+        e instanceof system.errors.BadResource ||
+        e instanceof system.errors.BrokenPipe
       ) {
         status = codeMap.get("EBADF")!;
       } else {

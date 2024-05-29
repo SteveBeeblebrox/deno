@@ -46,7 +46,7 @@ function opKill(pid, signo, apiName) {
 }
 
 function kill(pid, signo = "SIGTERM") {
-  opKill(pid, signo, "Deno.kill()");
+  opKill(pid, signo, "system.kill()");
 }
 
 function opRunStatus(rid) {
@@ -77,20 +77,20 @@ class Process {
     this.pid = res.pid;
 
     if (res.stdinRid && res.stdinRid > 0) {
-      this.stdin = new FsFile(res.stdinRid, SymbolFor("Deno.internal.FsFile"));
+      this.stdin = new FsFile(res.stdinRid, SymbolFor("system.internal.FsFile"));
     }
 
     if (res.stdoutRid && res.stdoutRid > 0) {
       this.stdout = new FsFile(
         res.stdoutRid,
-        SymbolFor("Deno.internal.FsFile"),
+        SymbolFor("system.internal.FsFile"),
       );
     }
 
     if (res.stderrRid && res.stderrRid > 0) {
       this.stderr = new FsFile(
         res.stderrRid,
-        SymbolFor("Deno.internal.FsFile"),
+        SymbolFor("system.internal.FsFile"),
       );
     }
   }
@@ -126,7 +126,7 @@ class Process {
   }
 
   kill(signo = "SIGTERM") {
-    opKill(this.pid, signo, "Deno.Process.kill()");
+    opKill(this.pid, signo, "system.Process.kill()");
   }
 }
 
@@ -148,9 +148,9 @@ function run({
     ];
   }
   internals.warnOnDeprecatedApi(
-    "Deno.run()",
+    "system.run()",
     (new Error()).stack,
-    `Use "Deno.Command()" API instead.`,
+    `Use "system.Command()" API instead.`,
   );
   const res = opRun({
     cmd: ArrayPrototypeMap(cmd, String),
@@ -206,7 +206,7 @@ function spawnChild(command, options = { __proto__: null }) {
   return spawnChildInner(
     op_spawn_child,
     command,
-    "Deno.Command().spawn()",
+    "system.Command().spawn()",
     options,
   );
 }
@@ -376,13 +376,13 @@ class ChildProcess {
 function spawn(command, options) {
   if (options?.stdin === "piped") {
     throw new TypeError(
-      "Piped stdin is not supported for this function, use 'Deno.Command().spawn()' instead",
+      "Piped stdin is not supported for this function, use 'system.Command().spawn()' instead",
     );
   }
   return spawnChildInner(
     op_spawn_child,
     command,
-    "Deno.Command().output()",
+    "system.Command().output()",
     options,
   )
     .output();
@@ -402,7 +402,7 @@ function spawnSync(command, {
 } = { __proto__: null }) {
   if (stdin === "piped") {
     throw new TypeError(
-      "Piped stdin is not supported for this function, use 'Deno.Command().spawn()' instead",
+      "Piped stdin is not supported for this function, use 'system.Command().spawn()' instead",
     );
   }
   const result = op_spawn_sync({
@@ -449,7 +449,7 @@ class Command {
   output() {
     if (this.#options?.stdin === "piped") {
       throw new TypeError(
-        "Piped stdin is not supported for this function, use 'Deno.Command.spawn()' instead",
+        "Piped stdin is not supported for this function, use 'system.Command.spawn()' instead",
       );
     }
     return spawn(this.#command, this.#options);
@@ -458,7 +458,7 @@ class Command {
   outputSync() {
     if (this.#options?.stdin === "piped") {
       throw new TypeError(
-        "Piped stdin is not supported for this function, use 'Deno.Command.spawn()' instead",
+        "Piped stdin is not supported for this function, use 'system.Command.spawn()' instead",
       );
     }
     return spawnSync(this.#command, this.#options);

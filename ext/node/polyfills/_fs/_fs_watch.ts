@@ -114,16 +114,16 @@ export function watch(
 
   const watchPath = getValidatedPath(filename).toString();
 
-  let iterator: Deno.FsWatcher;
+  let iterator: system.FsWatcher;
   // Start the actual watcher a few msec later to avoid race condition
   // error in test case in compat test case
   // (parallel/test-fs-watch.js, parallel/test-fs-watchfile.js)
   const timer = setTimeout(() => {
-    iterator = Deno.watchFs(watchPath, {
+    iterator = system.watchFs(watchPath, {
       recursive: options?.recursive || false,
     });
 
-    asyncIterableToCallback<Deno.FsEvent>(iterator, (val, done) => {
+    asyncIterableToCallback<system.FsEvent>(iterator, (val, done) => {
       if (done) return;
       fsWatcher.emit(
         "change",
@@ -140,7 +140,7 @@ export function watch(
     try {
       iterator?.close();
     } catch (e) {
-      if (e instanceof Deno.errors.BadResource) {
+      if (e instanceof system.errors.BadResource) {
         // already closed
         return;
       }
@@ -317,9 +317,9 @@ class StatWatcher extends EventEmitter {
 class FSWatcher extends EventEmitter {
   #closer: () => void;
   #closed = false;
-  #watcher: () => Deno.FsWatcher;
+  #watcher: () => system.FsWatcher;
 
-  constructor(closer: () => void, getter: () => Deno.FsWatcher) {
+  constructor(closer: () => void, getter: () => system.FsWatcher) {
     super();
     this.#closer = closer;
     this.#watcher = getter;
@@ -343,7 +343,7 @@ class FSWatcher extends EventEmitter {
 type NodeFsEventType = "rename" | "change";
 
 function convertDenoFsEventToNodeFsEvent(
-  kind: Deno.FsEvent["kind"],
+  kind: system.FsEvent["kind"],
 ): NodeFsEventType {
   if (kind === "create" || kind === "remove") {
     return "rename";

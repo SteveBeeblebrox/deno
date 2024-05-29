@@ -1425,7 +1425,7 @@ fn should_be_treated_as_relative_or_absolute_path(specifier: &str) -> bool {
   is_relative_specifier(specifier)
 }
 
-// TODO(ry) We very likely have this utility function elsewhere in Deno.
+// TODO(ry) We very likely have this utility function elsewhere in system.
 fn is_relative_specifier(specifier: &str) -> bool {
   let specifier_len = specifier.len();
   let specifier_chars: Vec<_> = specifier.chars().collect();

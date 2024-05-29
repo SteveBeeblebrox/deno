@@ -157,7 +157,7 @@ class Event {
     };
   }
 
-  [SymbolFor("Deno.privateCustomInspect")](inspect, inspectOptions) {
+  [SymbolFor("system.privateCustomInspect")](inspect, inspectOptions) {
     return inspect(
       createFilteredInspectProxy({
         object: this,
@@ -1023,7 +1023,7 @@ class EventTarget {
     // This prevents the recursive dispatches of unload events.
     // See https://github.com/denoland/deno/issues/9201.
     if (event.type === "unload" && self === globalThis_) {
-      globalThis_[SymbolFor("Deno.isUnloadDispatched")] = true;
+      globalThis_[SymbolFor("system.isUnloadDispatched")] = true;
     }
 
     const { listeners } = self[eventTargetData];
@@ -1047,7 +1047,7 @@ class EventTarget {
     return null;
   }
 
-  [SymbolFor("Deno.privateCustomInspect")](inspect, inspectOptions) {
+  [SymbolFor("system.privateCustomInspect")](inspect, inspectOptions) {
     return `${this.constructor.name} ${inspect({}, inspectOptions)}`;
   }
 }
@@ -1110,7 +1110,7 @@ class ErrorEvent extends Event {
     this.#error = error;
   }
 
-  [SymbolFor("Deno.privateCustomInspect")](inspect, inspectOptions) {
+  [SymbolFor("system.privateCustomInspect")](inspect, inspectOptions) {
     return inspect(
       createFilteredInspectProxy({
         object: this,
@@ -1176,7 +1176,7 @@ class CloseEvent extends Event {
     this.#reason = reason;
   }
 
-  [SymbolFor("Deno.privateCustomInspect")](inspect, inspectOptions) {
+  [SymbolFor("system.privateCustomInspect")](inspect, inspectOptions) {
     return inspect(
       createFilteredInspectProxy({
         object: this,
@@ -1213,7 +1213,7 @@ class MessageEvent extends Event {
     this.lastEventId = eventInitDict?.lastEventId ?? "";
   }
 
-  [SymbolFor("Deno.privateCustomInspect")](inspect, inspectOptions) {
+  [SymbolFor("system.privateCustomInspect")](inspect, inspectOptions) {
     return inspect(
       createFilteredInspectProxy({
         object: this,
@@ -1253,7 +1253,7 @@ class CustomEvent extends Event {
     return this.#detail;
   }
 
-  [SymbolFor("Deno.privateCustomInspect")](inspect, inspectOptions) {
+  [SymbolFor("system.privateCustomInspect")](inspect, inspectOptions) {
     return inspect(
       createFilteredInspectProxy({
         object: this,
@@ -1288,7 +1288,7 @@ class ProgressEvent extends Event {
     this.total = eventInitDict?.total ?? 0;
   }
 
-  [SymbolFor("Deno.privateCustomInspect")](inspect, inspectOptions) {
+  [SymbolFor("system.privateCustomInspect")](inspect, inspectOptions) {
     return inspect(
       createFilteredInspectProxy({
         object: this,
@@ -1341,7 +1341,7 @@ class PromiseRejectionEvent extends Event {
     this.#reason = reason;
   }
 
-  [SymbolFor("Deno.privateCustomInspect")](inspect, inspectOptions) {
+  [SymbolFor("system.privateCustomInspect")](inspect, inspectOptions) {
     return inspect(
       createFilteredInspectProxy({
         object: this,

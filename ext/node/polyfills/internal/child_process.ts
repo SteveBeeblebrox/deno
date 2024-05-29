@@ -152,7 +152,7 @@ export class ChildProcess extends EventEmitter {
     null,
   ];
 
-  #process!: Deno.ChildProcess;
+  #process!: system.ChildProcess;
   #spawned = Promise.withResolvers<void>();
 
   constructor(
@@ -189,7 +189,7 @@ export class ChildProcess extends EventEmitter {
 
     const stringEnv = mapValues(env, (value) => value.toString());
     try {
-      this.#process = new Deno.Command(cmd, {
+      this.#process = new system.Command(cmd, {
         args: cmdArgs,
         cwd,
         env: stringEnv,
@@ -276,7 +276,7 @@ export class ChildProcess extends EventEmitter {
       })();
     } catch (err) {
       let e = err;
-      if (e instanceof Deno.errors.NotFound) {
+      if (e instanceof system.errors.NotFound) {
         e = _createSpawnSyncError("ENOENT", command, args);
       }
       this.#_handleError(e);
@@ -297,7 +297,7 @@ export class ChildProcess extends EventEmitter {
       this.#process.kill(denoSignal);
     } catch (err) {
       const alreadyClosed = err instanceof TypeError ||
-        err instanceof Deno.errors.PermissionDenied;
+        err instanceof system.errors.PermissionDenied;
       if (!alreadyClosed) {
         throw err;
       }
@@ -390,17 +390,17 @@ function toDenoStdio(
   }
 }
 
-function toDenoSignal(signal: number | string): Deno.Signal {
+function toDenoSignal(signal: number | string): system.Signal {
   if (typeof signal === "number") {
     for (const name of keys(os.signals)) {
       if (os.signals[name] === signal) {
-        return name as Deno.Signal;
+        return name as system.Signal;
       }
     }
     throw new ERR_UNKNOWN_SIGNAL(String(signal));
   }
 
-  const denoSignal = signal as Deno.Signal;
+  const denoSignal = signal as system.Signal;
   if (denoSignal in os.signals) {
     return denoSignal;
   }
@@ -480,11 +480,11 @@ function copyProcessEnvToEnv(
   optionEnv?: Record<string, string | number | boolean>,
 ) {
   if (
-    Deno.env.get(name) &&
+    system.env.get(name) &&
     (!optionEnv ||
       !ObjectHasOwn(optionEnv, name))
   ) {
-    env[name] = Deno.env.get(name);
+    env[name] = system.env.get(name);
   }
 }
 
@@ -631,7 +631,7 @@ export function normalizeSpawnArguments(
       if (typeof options.shell === "string") {
         file = options.shell;
       } else {
-        file = Deno.env.get("comspec") || "cmd.exe";
+        file = system.env.get("comspec") || "cmd.exe";
       }
       // '/d /s /c' is used only for cmd.exe.
       if (/^(?:.*\\)?cmd(?:\.exe)?$/i.exec(file) !== null) {
@@ -657,7 +657,7 @@ export function normalizeSpawnArguments(
     ArrayPrototypeUnshift(args, file);
   }
 
-  const env = options.env || Deno.env.toObject();
+  const env = options.env || system.env.toObject();
   const envPairs: string[][] = [];
 
   // process.env.NODE_V8_COVERAGE always propagates, making it possible to
@@ -745,7 +745,7 @@ function buildCommand(
   args: string[],
   shell: string | boolean,
 ): [string, string[]] {
-  if (file === Deno.execPath()) {
+  if (file === system.execPath()) {
     // The user is trying to spawn another Deno process as Node.js.
     args = toDenoArgs(args);
   }
@@ -758,7 +758,7 @@ function buildCommand(
       if (typeof shell === "string") {
         file = shell;
       } else {
-        file = Deno.env.get("comspec") || "cmd.exe";
+        file = system.env.get("comspec") || "cmd.exe";
       }
       // '/d /s /c' is used only for cmd.exe.
       if (/^(?:.*\\)?cmd(?:\.exe)?$/i.test(file)) {
@@ -837,10 +837,10 @@ export interface SpawnSyncResult {
 }
 
 function parseSpawnSyncOutputStreams(
-  output: Deno.CommandOutput,
+  output: system.CommandOutput,
   name: "stdout" | "stderr",
 ): string | Buffer | null {
-  // new Deno.Command().outputSync() returns getters for stdout and stderr that throw when set
+  // new system.Command().outputSync() returns getters for stdout and stderr that throw when set
   // to 'inherit'.
   try {
     return Buffer.from(output[name]) as string | Buffer;
@@ -855,7 +855,7 @@ export function spawnSync(
   options: SpawnSyncOptions,
 ): SpawnSyncResult {
   const {
-    env = Deno.env.toObject(),
+    env = system.env.toObject(),
     stdio = ["pipe", "pipe", "pipe"],
     shell = false,
     cwd,
@@ -875,7 +875,7 @@ export function spawnSync(
 
   const result: SpawnSyncResult = {};
   try {
-    const output = new Deno.Command(command, {
+    const output = new system.Command(command, {
       args,
       cwd,
       env: mapValues(env, (value) => value.toString()),
@@ -909,7 +909,7 @@ export function spawnSync(
     result.stderr = stderr;
     result.output = [output.signal, stdout, stderr];
   } catch (err) {
-    if (err instanceof Deno.errors.NotFound) {
+    if (err instanceof system.errors.NotFound) {
       result.error = _createSpawnSyncError("ENOENT", command, args);
     }
   }
@@ -1005,7 +1005,7 @@ function toDenoArgs(args: string[]): string[] {
     return args;
   }
 
-  // Update this logic as more CLI arguments are mapped from Node to Deno.
+  // Update this logic as more CLI arguments are mapped from Node to system.
   const denoArgs: string[] = [];
   let useRunArgs = true;
 
@@ -1070,7 +1070,7 @@ function toDenoArgs(args: string[]): string[] {
       flagValue = args[i];
     }
 
-    // Remap Node's eval flags to Deno.
+    // Remap Node's eval flags to system.
     if (flag === "-e" || flag === "--eval") {
       denoArgs.push("eval", flagValue);
       useRunArgs = false;
@@ -1108,8 +1108,8 @@ export function setupChannel(target, ipc) {
       }
     } catch (err) {
       if (
-        err instanceof Deno.errors.Interrupted ||
-        err instanceof Deno.errors.BadResource
+        err instanceof system.errors.Interrupted ||
+        err instanceof system.errors.BadResource
       ) {
         return;
       }

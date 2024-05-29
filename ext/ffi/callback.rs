@@ -557,7 +557,7 @@ pub fn op_ffi_unsafe_callback_create<FP, 'scope>(
 where
   FP: FfiPermissions + 'static,
 {
-  check_unstable(state, "Deno.UnsafeCallback");
+  check_unstable(state, "system.UnsafeCallback");
   let permissions = state.borrow_mut::<FP>();
   permissions.check_partial(None)?;
 

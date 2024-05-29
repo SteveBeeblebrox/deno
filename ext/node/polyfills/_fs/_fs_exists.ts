@@ -16,7 +16,7 @@ type ExistsCallback = (exists: boolean) => void;
  */
 export function exists(path: string | URL, callback: ExistsCallback) {
   path = path instanceof URL ? pathFromURL(path) : path;
-  Deno.lstat(path).then(() => callback(true), () => callback(false));
+  system.lstat(path).then(() => callback(true), () => callback(false));
 }
 
 // The callback of fs.exists doesn't have standard callback signature.

@@ -23,7 +23,7 @@ fn setup() -> Vec<Extension> {
       source = r#"
         import { TextDecoder } from "ext:deno_web/08_text_encoding.js";
         globalThis.TextDecoder = TextDecoder;
-        globalThis.hello12k = Deno.core.encode("hello world\n".repeat(1e3));
+        globalThis.hello12k = system.core.encode("hello world\n".repeat(1e3));
       "#
     }],
     state = |state| {

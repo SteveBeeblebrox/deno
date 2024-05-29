@@ -834,7 +834,7 @@ where
   if let Some(proxy) = args.proxy.clone() {
     let permissions = state.borrow_mut::<FP>();
     let url = Url::parse(&proxy.url)?;
-    permissions.check_net_url(&url, "Deno.createHttpClient()")?;
+    permissions.check_net_url(&url, "system.createHttpClient()")?;
   }
 
   let options = state.borrow::<Options>();

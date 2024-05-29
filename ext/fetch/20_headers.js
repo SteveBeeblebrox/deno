@@ -444,7 +444,7 @@ class Headers {
     }
   }
 
-  [SymbolFor("Deno.privateCustomInspect")](inspect, inspectOptions) {
+  [SymbolFor("system.privateCustomInspect")](inspect, inspectOptions) {
     if (ObjectPrototypeIsPrototypeOf(HeadersPrototype, this)) {
       return `${this.constructor.name} ${
         inspect(ObjectFromEntries(this), inspectOptions)

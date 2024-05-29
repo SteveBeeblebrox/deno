@@ -46,7 +46,7 @@ class Buffer {
 
   constructor(ab) {
     internals.warnOnDeprecatedApi(
-      "new Deno.Buffer()",
+      "new system.Buffer()",
       new Error().stack,
       "Use `Buffer` from `https://jsr.io/@std/io/doc/buffer/~` instead.",
     );
@@ -236,7 +236,7 @@ class Buffer {
 
 async function readAll(r) {
   internals.warnOnDeprecatedApi(
-    "Deno.readAll()",
+    "system.readAll()",
     new Error().stack,
     "Use `readAll()` from `https://jsr.io/@std/io/doc/read-all/~` instead.",
   );
@@ -247,7 +247,7 @@ async function readAll(r) {
 
 function readAllSync(r) {
   internals.warnOnDeprecatedApi(
-    "Deno.readAllSync()",
+    "system.readAllSync()",
     new Error().stack,
     "Use `readAllSync()` from `https://jsr.io/@std/io/doc/read-all/~` instead.",
   );
@@ -258,7 +258,7 @@ function readAllSync(r) {
 
 async function writeAll(w, arr) {
   internals.warnOnDeprecatedApi(
-    "Deno.writeAll()",
+    "system.writeAll()",
     new Error().stack,
     "Use `writeAll()` from `https://jsr.io/@std/io/doc/write-all/~` instead.",
   );
@@ -270,7 +270,7 @@ async function writeAll(w, arr) {
 
 function writeAllSync(w, arr) {
   internals.warnOnDeprecatedApi(
-    "Deno.writeAllSync()",
+    "system.writeAllSync()",
     new Error().stack,
     "Use `writeAllSync()` from `https://jsr.io/@std/io/doc/write-all/~` instead.",
   );

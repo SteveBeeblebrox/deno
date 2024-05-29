@@ -101,7 +101,7 @@ export const exit = (code?: number | string) => {
 /** https://nodejs.org/api/process.html#processumaskmask */
 export const umask = () => {
   // Always return the system default umask value.
-  // We don't use Deno.umask here because it has a race
+  // We don't use system.umask here because it has a race
   // condition bug.
   // See https://github.com/denoland/deno_std/issues/1893#issuecomment-1032897779
   return 0o22;
@@ -248,7 +248,7 @@ export function memoryUsage(): {
   arrayBuffers: number;
 } {
   return {
-    ...Deno.memoryUsage(),
+    ...system.memoryUsage(),
     arrayBuffers: 0,
   };
 }
@@ -308,8 +308,8 @@ export function kill(pid: number, sig: string | number = "SIGTERM") {
 let getgid, getuid, geteuid;
 
 if (!isWindows) {
-  getgid = () => Deno.gid();
-  getuid = () => Deno.uid();
+  getgid = () => system.gid();
+  getuid = () => system.uid();
   geteuid = () => op_geteuid();
 }
 
@@ -425,7 +425,7 @@ Process.prototype.abort = abort;
 // is used by `node-tap`. It was marked for removal a couple of years
 // ago. See https://github.com/nodejs/node/blob/6a6b3c54022104cc110ab09044a2a0cecb8988e7/lib/internal/bootstrap/node.js#L172
 Process.prototype.reallyExit = (code: number) => {
-  return Deno.exit(code || 0);
+  return system.exit(code || 0);
 };
 
 Process.prototype._exiting = _exiting;
@@ -464,13 +464,13 @@ Process.prototype.on = function (
     warnNotImplemented(`process.on("${event}")`);
     EventEmitter.prototype.on.call(this, event, listener);
   } else if (event.startsWith("SIG")) {
-    if (event === "SIGBREAK" && Deno.build.os !== "windows") {
+    if (event === "SIGBREAK" && system.build.os !== "windows") {
       // Ignores SIGBREAK if the platform is not windows.
-    } else if (event === "SIGTERM" && Deno.build.os === "windows") {
+    } else if (event === "SIGTERM" && system.build.os === "windows") {
       // Ignores SIGTERM on windows.
     } else {
       EventEmitter.prototype.on.call(this, event, listener);
-      Deno.addSignalListener(event as Deno.Signal, listener);
+      system.addSignalListener(event as system.Signal, listener);
     }
   } else {
     EventEmitter.prototype.on.call(this, event, listener);
@@ -490,13 +490,13 @@ Process.prototype.off = function (
     warnNotImplemented(`process.off("${event}")`);
     EventEmitter.prototype.off.call(this, event, listener);
   } else if (event.startsWith("SIG")) {
-    if (event === "SIGBREAK" && Deno.build.os !== "windows") {
+    if (event === "SIGBREAK" && system.build.os !== "windows") {
       // Ignores SIGBREAK if the platform is not windows.
-    } else if (event === "SIGTERM" && Deno.build.os === "windows") {
+    } else if (event === "SIGTERM" && system.build.os === "windows") {
       // Ignores SIGTERM on windows.
     } else {
       EventEmitter.prototype.off.call(this, event, listener);
-      Deno.removeSignalListener(event as Deno.Signal, listener);
+      system.removeSignalListener(event as system.Signal, listener);
     }
   } else {
     EventEmitter.prototype.off.call(this, event, listener);
@@ -513,10 +513,10 @@ Process.prototype.emit = function (
   ...args: any[]
 ): boolean {
   if (event.startsWith("SIG")) {
-    if (event === "SIGBREAK" && Deno.build.os !== "windows") {
+    if (event === "SIGBREAK" && system.build.os !== "windows") {
       // Ignores SIGBREAK if the platform is not windows.
     } else {
-      Deno.kill(Deno.pid, event as Deno.Signal);
+      system.kill(system.pid, event as system.Signal);
     }
   } else {
     return EventEmitter.prototype.emit.call(this, event, ...args);
@@ -536,11 +536,11 @@ Process.prototype.prependListener = function (
     warnNotImplemented(`process.prependListener("${event}")`);
     EventEmitter.prototype.prependListener.call(this, event, listener);
   } else if (event.startsWith("SIG")) {
-    if (event === "SIGBREAK" && Deno.build.os !== "windows") {
+    if (event === "SIGBREAK" && system.build.os !== "windows") {
       // Ignores SIGBREAK if the platform is not windows.
     } else {
       EventEmitter.prototype.prependListener.call(this, event, listener);
-      Deno.addSignalListener(event as Deno.Signal, listener);
+      system.addSignalListener(event as system.Signal, listener);
     }
   } else {
     EventEmitter.prototype.prependListener.call(this, event, listener);
@@ -559,7 +559,7 @@ Object.defineProperty(Process.prototype, "pid", {
 /** https://nodejs.org/api/process.html#processppid */
 Object.defineProperty(Process.prototype, "ppid", {
   get() {
-    return Deno.ppid;
+    return system.ppid;
   },
 });
 
@@ -572,7 +572,7 @@ Object.defineProperty(Process.prototype, "platform", {
 
 // https://nodejs.org/api/process.html#processsetsourcemapsenabledval
 Process.prototype.setSourceMapsEnabled = (_val: boolean) => {
-  // This is a no-op in Deno. Source maps are always enabled.
+  // This is a no-op in system. Source maps are always enabled.
   // TODO(@satyarohith): support disabling source maps if needed.
 };
 
@@ -655,7 +655,7 @@ Process.prototype.binding = (name: BindingName) => {
 /** https://nodejs.org/api/process.html#processumaskmask */
 Process.prototype.umask = () => {
   // Always return the system default umask value.
-  // We don't use Deno.umask here because it has a race
+  // We don't use system.umask here because it has a race
   // condition bug.
   // See https://github.com/denoland/deno_std/issues/1893#issuecomment-1032897779
   return 0o22;
@@ -680,7 +680,7 @@ Object.defineProperty(Process.prototype, "execPath", {
     if (execPath) {
       return execPath;
     }
-    execPath = Deno.execPath();
+    execPath = system.execPath();
     return execPath;
   },
   set(path: string) {
@@ -846,10 +846,10 @@ function synchronizeListeners() {
 Object.defineProperty(argv, "0", { get: () => argv0 });
 Object.defineProperty(argv, "1", {
   get: () => {
-    if (Deno.mainModule?.startsWith("file:")) {
-      return pathFromURL(new URL(Deno.mainModule));
+    if (system.mainModule?.startsWith("file:")) {
+      return pathFromURL(new URL(system.mainModule));
     } else {
-      return join(Deno.cwd(), "$deno$node.js");
+      return join(system.cwd(), "$deno$node.js");
     }
   },
 });
@@ -904,8 +904,8 @@ internals.__bootstrapNodeProcess = function (
     }
 
     arch = arch_();
-    platform = isWindows ? "win32" : Deno.build.os;
-    pid = Deno.pid;
+    platform = isWindows ? "win32" : system.build.os;
+    pid = system.pid;
 
     initializeDebugEnv(nodeDebug);
 

@@ -4,7 +4,7 @@
 /// <reference lib="esnext" />
 /// <reference lib="esnext.disposable" />
 
-declare namespace Deno {
+declare namespace system {
   /** @category Network */
   export interface NetAddr {
     transport: "tcp" | "udp";
@@ -156,10 +156,10 @@ declare namespace Deno {
   /** Listen announces on the local transport address.
    *
    * ```ts
-   * const listener1 = Deno.listen({ port: 80 })
-   * const listener2 = Deno.listen({ hostname: "192.0.2.1", port: 80 })
-   * const listener3 = Deno.listen({ hostname: "[2001:db8::1]", port: 80 });
-   * const listener4 = Deno.listen({ hostname: "golang.org", port: 80, transport: "tcp" });
+   * const listener1 = system.listen({ port: 80 })
+   * const listener2 = system.listen({ hostname: "192.0.2.1", port: 80 })
+   * const listener3 = system.listen({ hostname: "[2001:db8::1]", port: 80 });
+   * const listener4 = system.listen({ hostname: "golang.org", port: 80, transport: "tcp" });
    * ```
    *
    * Requires `allow-net` permission.
@@ -172,7 +172,7 @@ declare namespace Deno {
   ): TcpListener;
 
   /** Options which can be set when opening a Unix listener via
-   * {@linkcode Deno.listen} or {@linkcode Deno.listenDatagram}.
+   * {@linkcode system.listen} or {@linkcode system.listenDatagram}.
    *
    * @category Network
    */
@@ -184,7 +184,7 @@ declare namespace Deno {
   /** Listen announces on the local transport address.
    *
    * ```ts
-   * const listener = Deno.listen({ path: "/foo/bar.sock", transport: "unix" })
+   * const listener = system.listen({ path: "/foo/bar.sock", transport: "unix" })
    * ```
    *
    * Requires `allow-read` and `allow-write` permission.
@@ -301,10 +301,10 @@ declare namespace Deno {
    * security).
    *
    * ```ts
-   * using listener = Deno.listenTls({
+   * using listener = system.listenTls({
    *   port: 443,
-   *   cert: Deno.readTextFileSync("./server.crt"),
-   *   key: Deno.readTextFileSync("./server.key"),
+   *   cert: system.readTextFileSync("./server.crt"),
+   *   key: system.readTextFileSync("./server.key"),
    * });
    * ```
    *
@@ -334,10 +334,10 @@ declare namespace Deno {
    * transport (default is "tcp"), and resolves to the connection (`Conn`).
    *
    * ```ts
-   * const conn1 = await Deno.connect({ port: 80 });
-   * const conn2 = await Deno.connect({ hostname: "192.0.2.1", port: 80 });
-   * const conn3 = await Deno.connect({ hostname: "[2001:db8::1]", port: 80 });
-   * const conn4 = await Deno.connect({ hostname: "golang.org", port: 80, transport: "tcp" });
+   * const conn1 = await system.connect({ port: 80 });
+   * const conn2 = await system.connect({ hostname: "192.0.2.1", port: 80 });
+   * const conn3 = await system.connect({ hostname: "[2001:db8::1]", port: 80 });
+   * const conn4 = await system.connect({ hostname: "golang.org", port: 80, transport: "tcp" });
    * ```
    *
    * Requires `allow-net` permission for "tcp".
@@ -389,11 +389,11 @@ declare namespace Deno {
    * transport (default is "tcp"), and resolves to the connection (`Conn`).
    *
    * ```ts
-   * const conn1 = await Deno.connect({ port: 80 });
-   * const conn2 = await Deno.connect({ hostname: "192.0.2.1", port: 80 });
-   * const conn3 = await Deno.connect({ hostname: "[2001:db8::1]", port: 80 });
-   * const conn4 = await Deno.connect({ hostname: "golang.org", port: 80, transport: "tcp" });
-   * const conn5 = await Deno.connect({ path: "/foo/bar.sock", transport: "unix" });
+   * const conn1 = await system.connect({ port: 80 });
+   * const conn2 = await system.connect({ hostname: "192.0.2.1", port: 80 });
+   * const conn3 = await system.connect({ hostname: "[2001:db8::1]", port: 80 });
+   * const conn4 = await system.connect({ hostname: "golang.org", port: 80, transport: "tcp" });
+   * const conn5 = await system.connect({ path: "/foo/bar.sock", transport: "unix" });
    * ```
    *
    * Requires `allow-net` permission for "tcp" and `allow-read` for "unix".
@@ -440,11 +440,11 @@ declare namespace Deno {
    * be used (see also https://github.com/ctz/webpki-roots for specifics)
    *
    * ```ts
-   * const caCert = await Deno.readTextFile("./certs/my_custom_root_CA.pem");
-   * const conn1 = await Deno.connectTls({ port: 80 });
-   * const conn2 = await Deno.connectTls({ caCerts: [caCert], hostname: "192.0.2.1", port: 80 });
-   * const conn3 = await Deno.connectTls({ hostname: "[2001:db8::1]", port: 80 });
-   * const conn4 = await Deno.connectTls({ caCerts: [caCert], hostname: "golang.org", port: 80});
+   * const caCert = await system.readTextFile("./certs/my_custom_root_CA.pem");
+   * const conn1 = await system.connectTls({ port: 80 });
+   * const conn2 = await system.connectTls({ caCerts: [caCert], hostname: "192.0.2.1", port: 80 });
+   * const conn3 = await system.connectTls({ hostname: "[2001:db8::1]", port: 80 });
+   * const conn4 = await system.connectTls({ caCerts: [caCert], hostname: "golang.org", port: 80});
    * ```
    *
    * Requires `allow-net` permission.
@@ -460,13 +460,13 @@ declare namespace Deno {
    * be used (see also https://github.com/ctz/webpki-roots for specifics)
    *
    * ```ts
-   * const caCert = await Deno.readTextFile("./certs/my_custom_root_CA.pem");
+   * const caCert = await system.readTextFile("./certs/my_custom_root_CA.pem");
    * const key = "----BEGIN PRIVATE KEY----...";
    * const cert = "----BEGIN CERTIFICATE----...";
-   * const conn1 = await Deno.connectTls({ port: 80, key, cert });
-   * const conn2 = await Deno.connectTls({ caCerts: [caCert], hostname: "192.0.2.1", port: 80, key, cert });
-   * const conn3 = await Deno.connectTls({ hostname: "[2001:db8::1]", port: 80, key, cert });
-   * const conn4 = await Deno.connectTls({ caCerts: [caCert], hostname: "golang.org", port: 80, key, cert });
+   * const conn1 = await system.connectTls({ port: 80, key, cert });
+   * const conn2 = await system.connectTls({ caCerts: [caCert], hostname: "192.0.2.1", port: 80, key, cert });
+   * const conn3 = await system.connectTls({ hostname: "[2001:db8::1]", port: 80, key, cert });
+   * const conn4 = await system.connectTls({ caCerts: [caCert], hostname: "golang.org", port: 80, key, cert });
    * ```
    *
    * Requires `allow-net` permission.
@@ -511,10 +511,10 @@ declare namespace Deno {
    * being used elsewhere. In such a case, this function will fail.
    *
    * ```ts
-   * const conn = await Deno.connect({ port: 80, hostname: "127.0.0.1" });
-   * const caCert = await Deno.readTextFile("./certs/my_custom_root_CA.pem");
-   * // `conn` becomes unusable after calling `Deno.startTls`
-   * const tlsConn = await Deno.startTls(conn, { caCerts: [caCert], hostname: "localhost" });
+   * const conn = await system.connect({ port: 80, hostname: "127.0.0.1" });
+   * const caCert = await system.readTextFile("./certs/my_custom_root_CA.pem");
+   * // `conn` becomes unusable after calling `system.startTls`
+   * const tlsConn = await system.startTls(conn, { caCerts: [caCert], hostname: "localhost" });
    * ```
    *
    * Requires `allow-net` permission.
@@ -532,9 +532,9 @@ declare namespace Deno {
    * Matches behavior of POSIX shutdown(3).
    *
    * ```ts
-   * const listener = Deno.listen({ port: 80 });
+   * const listener = system.listen({ port: 80 });
    * const conn = await listener.accept();
-   * Deno.shutdown(conn.rid);
+   * system.shutdown(conn.rid);
    * ```
    *
    * @deprecated This will be removed in Deno 2.0. See the

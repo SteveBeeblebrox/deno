@@ -21,7 +21,7 @@ export function link(
     : existingPath;
   newPath = newPath instanceof URL ? pathFromURL(newPath) : newPath;
 
-  Deno.link(existingPath, newPath).then(() => callback(null), callback);
+  system.link(existingPath, newPath).then(() => callback(null), callback);
 }
 
 /**
@@ -46,5 +46,5 @@ export function linkSync(
     : existingPath;
   newPath = newPath instanceof URL ? pathFromURL(newPath) : newPath;
 
-  Deno.linkSync(existingPath, newPath);
+  system.linkSync(existingPath, newPath);
 }

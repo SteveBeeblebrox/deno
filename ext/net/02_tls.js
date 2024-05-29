@@ -39,9 +39,9 @@ class TlsConn extends Conn {
 
   get rid() {
     internals.warnOnDeprecatedApi(
-      "Deno.TlsConn.rid",
+      "system.TlsConn.rid",
       new Error().stack,
-      "Use `Deno.TlsConn` instance methods instead.",
+      "Use `system.TlsConn` instance methods instead.",
     );
     return this.#rid;
   }
@@ -70,20 +70,20 @@ async function connectTls({
   }
   let deprecatedCertFile = undefined;
 
-  // Deno.connectTls has an irregular option where you can just pass `certFile` and
+  // system.connectTls has an irregular option where you can just pass `certFile` and
   // not `keyFile`. In this case it's used for `caCerts` rather than the client key.
   if (certFile !== undefined && keyFile === undefined) {
     internals.warnOnDeprecatedApi(
-      "Deno.ConnectTlsOptions.certFile",
+      "system.ConnectTlsOptions.certFile",
       new Error().stack,
-      "Pass the cert file's contents to the `Deno.ConnectTlsOptions.caCerts` option instead.",
+      "Pass the cert file's contents to the `system.ConnectTlsOptions.caCerts` option instead.",
     );
 
     deprecatedCertFile = certFile;
     certFile = undefined;
   }
 
-  const keyPair = loadTlsKeyPair("Deno.connectTls", {
+  const keyPair = loadTlsKeyPair("system.connectTls", {
     keyFormat,
     cert,
     certFile,
@@ -93,7 +93,7 @@ async function connectTls({
     privateKey,
   });
   // TODO(mmastrac): We only expose this feature via symbol for now. This should actually be a feature
-  // in Deno.connectTls, however.
+  // in system.connectTls, however.
   const serverName = arguments[0][serverNameSymbol] ?? null;
   const { 0: rid, 1: localAddr, 2: remoteAddr } = await op_net_connect_tls(
     { hostname, port },
@@ -119,9 +119,9 @@ class TlsListener extends Listener {
 
   get rid() {
     internals.warnOnDeprecatedApi(
-      "Deno.TlsListener.rid",
+      "system.TlsListener.rid",
       new Error().stack,
-      "Use `Deno.TlsListener` instance methods instead.",
+      "Use `system.TlsListener` instance methods instead.",
     );
     return this.#rid;
   }
@@ -215,31 +215,31 @@ function loadTlsKeyPair(api, {
 
   if (certFile !== undefined) {
     internals.warnOnDeprecatedApi(
-      "Deno.TlsCertifiedKeyOptions.keyFile",
+      "system.TlsCertifiedKeyOptions.keyFile",
       new Error().stack,
-      "Pass the key file's contents to the `Deno.TlsCertifiedKeyPem.key` option instead.",
+      "Pass the key file's contents to the `system.TlsCertifiedKeyPem.key` option instead.",
     );
     internals.warnOnDeprecatedApi(
-      "Deno.TlsCertifiedKeyOptions.certFile",
+      "system.TlsCertifiedKeyOptions.certFile",
       new Error().stack,
-      "Pass the cert file's contents to the `Deno.TlsCertifiedKeyPem.cert` option instead.",
+      "Pass the cert file's contents to the `system.TlsCertifiedKeyPem.cert` option instead.",
     );
     return op_tls_key_static_from_file(api, certFile, keyFile);
   } else if (certChain !== undefined) {
-    if (api !== "Deno.connectTls") {
+    if (api !== "system.connectTls") {
       throw new TypeError(
         `Invalid options 'certChain' and 'privateKey' for ${api}`,
       );
     }
     internals.warnOnDeprecatedApi(
-      "Deno.TlsCertifiedKeyOptions.privateKey",
+      "system.TlsCertifiedKeyOptions.privateKey",
       new Error().stack,
-      "Use the `Deno.TlsCertifiedKeyPem.key` option instead.",
+      "Use the `system.TlsCertifiedKeyPem.key` option instead.",
     );
     internals.warnOnDeprecatedApi(
-      "Deno.TlsCertifiedKeyOptions.certChain",
+      "system.TlsCertifiedKeyOptions.certChain",
       new Error().stack,
-      "Use the `Deno.TlsCertifiedKeyPem.cert` option instead.",
+      "Use the `system.TlsCertifiedKeyPem.cert` option instead.",
     );
     return op_tls_key_static(certChain, privateKey);
   } else if (cert !== undefined) {
@@ -262,10 +262,10 @@ function listenTls({
 
   if (!hasTlsKeyPairOptions(arguments[0])) {
     throw new TypeError(
-      "A key and certificate are required for `Deno.listenTls`",
+      "A key and certificate are required for `system.listenTls`",
     );
   }
-  const keyPair = loadTlsKeyPair("Deno.listenTls", arguments[0]);
+  const keyPair = loadTlsKeyPair("system.listenTls", arguments[0]);
   const { 0: rid, 1: localAddr } = op_net_listen_tls(
     { hostname, port: Number(port) },
     { alpnProtocols, reusePort },
@@ -308,7 +308,7 @@ function createTlsKeyResolver(callback) {
         if (!hasTlsKeyPairOptions(key)) {
           op_tls_cert_resolver_resolve_error(lookup, sni, "Invalid key");
         } else {
-          const resolved = loadTlsKeyPair("Deno.listenTls", key);
+          const resolved = loadTlsKeyPair("system.listenTls", key);
           op_tls_cert_resolver_resolve(lookup, sni, resolved);
         }
       } catch (e) {

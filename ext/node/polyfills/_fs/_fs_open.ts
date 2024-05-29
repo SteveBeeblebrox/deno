@@ -22,10 +22,10 @@ import type { Buffer } from "node:buffer";
 
 function existsSync(filePath: string | URL): boolean {
   try {
-    Deno.lstatSync(filePath);
+    system.lstatSync(filePath);
     return true;
   } catch (error) {
-    if (error instanceof Deno.errors.NotFound) {
+    if (error instanceof system.errors.NotFound) {
       return false;
     }
     throw error;
@@ -58,7 +58,7 @@ type openCallback = (err: Error | null, fd: number) => void;
 function convertFlagAndModeToOptions(
   flag?: openFlags,
   mode?: number,
-): Deno.OpenOptions | undefined {
+): system.OpenOptions | undefined {
   if (flag === undefined && mode === undefined) return undefined;
   if (flag === undefined && mode) return { mode };
   return { ...getOpenOptions(flag), mode };
@@ -135,7 +135,7 @@ export function open(
       }
       return;
     }
-    Deno.open(
+    system.open(
       path as string,
       convertFlagAndModeToOptions(flags as openFlags, mode),
     ).then(
@@ -188,7 +188,7 @@ export function openSync(
     throw new Error(`EEXIST: file already exists, open '${path}'`);
   }
 
-  return Deno.openSync(
+  return system.openSync(
     path as string,
     convertFlagAndModeToOptions(flags, mode),
   )[internalRidSymbol];

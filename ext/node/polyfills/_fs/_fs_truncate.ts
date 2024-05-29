@@ -22,7 +22,7 @@ export function truncate(
 
   if (!callback) throw new Error("No callback function supplied");
 
-  Deno.truncate(path, len).then(() => callback(null), callback);
+  system.truncate(path, len).then(() => callback(null), callback);
 }
 
 export const truncatePromise = promisify(truncate) as (
@@ -33,5 +33,5 @@ export const truncatePromise = promisify(truncate) as (
 export function truncateSync(path: string | URL, len?: number) {
   path = path instanceof URL ? pathFromURL(path) : path;
 
-  Deno.truncateSync(path, len);
+  system.truncateSync(path, len);
 }

@@ -63,7 +63,7 @@ pub static UNSTABLE_GRANULAR_FLAGS: &[(
   ),
   (
     deno_cron::UNSTABLE_FEATURE_NAME,
-    "Enable unstable Deno.cron API",
+    "Enable unstable system.cron API",
     2,
   ),
   (

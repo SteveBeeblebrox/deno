@@ -22,7 +22,7 @@ export function createWritableStdioStream(writer, name, warmup = false) {
     write(buf, enc, cb) {
       if (!writer) {
         this.destroy(
-          new Error(`Deno.${name} is not available in this environment`),
+          new Error(`system.${name} is not available in this environment`),
         );
         return;
       }
@@ -53,12 +53,12 @@ export function createWritableStdioStream(writer, name, warmup = false) {
       enumerable: true,
       configurable: true,
       get: () =>
-        writer?.isTerminal() ? Deno.consoleSize?.().columns : undefined,
+        writer?.isTerminal() ? system.consoleSize?.().columns : undefined,
     },
     rows: {
       enumerable: true,
       configurable: true,
-      get: () => writer?.isTerminal() ? Deno.consoleSize?.().rows : undefined,
+      get: () => writer?.isTerminal() ? system.consoleSize?.().rows : undefined,
     },
     isTTY: {
       enumerable: true,
@@ -69,7 +69,7 @@ export function createWritableStdioStream(writer, name, warmup = false) {
       enumerable: true,
       configurable: true,
       value: () =>
-        writer?.isTerminal() ? Object.values(Deno.consoleSize?.()) : undefined,
+        writer?.isTerminal() ? Object.values(system.consoleSize?.()) : undefined,
     },
   });
 

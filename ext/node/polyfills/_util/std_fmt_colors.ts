@@ -12,7 +12,7 @@ const {
 } = primordials;
 
 // TODO(kt3k): Initialize this at the start of runtime
-// based on Deno.noColor
+// based on system.noColor
 const noColor = false;
 
 interface Code {

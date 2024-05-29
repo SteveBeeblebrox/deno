@@ -10,8 +10,8 @@ import { TextDecoder } from "ext:deno_web/08_text_encoding.js";
 
 export default class Dir {
   #dirPath: string | Uint8Array;
-  #syncIterator!: Iterator<Deno.DirEntry, undefined> | null;
-  #asyncIterator!: AsyncIterator<Deno.DirEntry, undefined> | null;
+  #syncIterator!: Iterator<system.DirEntry, undefined> | null;
+  #asyncIterator!: AsyncIterator<system.DirEntry, undefined> | null;
 
   constructor(path: string | Uint8Array) {
     if (!path) {
@@ -31,7 +31,7 @@ export default class Dir {
   read(callback?: (...args: any[]) => void): Promise<Dirent | null> {
     return new Promise((resolve, reject) => {
       if (!this.#asyncIterator) {
-        this.#asyncIterator = Deno.readDir(this.path)[Symbol.asyncIterator]();
+        this.#asyncIterator = system.readDir(this.path)[Symbol.asyncIterator]();
       }
       assert(this.#asyncIterator);
       this.#asyncIterator
@@ -57,7 +57,7 @@ export default class Dir {
 
   readSync(): Dirent | null {
     if (!this.#syncIterator) {
-      this.#syncIterator = Deno.readDirSync(this.path)![Symbol.iterator]();
+      this.#syncIterator = system.readDirSync(this.path)![Symbol.iterator]();
     }
 
     const iteratorResult = this.#syncIterator.next();

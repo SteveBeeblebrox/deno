@@ -19,7 +19,7 @@ export function realpath(
   if (!callback) {
     throw new Error("No callback function supplied");
   }
-  Deno.realPath(path).then(
+  system.realPath(path).then(
     (path) => callback!(null, path),
     (err) => callback!(err),
   );
@@ -33,7 +33,7 @@ export const realpathPromise = promisify(realpath) as (
 ) => Promise<string>;
 
 export function realpathSync(path: string): string {
-  return Deno.realPathSync(path);
+  return system.realPathSync(path);
 }
 
 realpathSync.native = realpathSync;

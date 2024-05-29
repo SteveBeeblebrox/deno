@@ -67,7 +67,7 @@ Timeout.prototype[createTimer] = function () {
     ? setInterval_(cb, this._idleTimeout, ...this._timerArgs)
     : setTimeout_(cb, this._idleTimeout, ...this._timerArgs);
   if (!this[kRefed]) {
-    Deno.unrefTimer(id);
+    system.unrefTimer(id);
   }
   MapPrototypeSet(activeTimers, id, this);
   return id;
@@ -95,7 +95,7 @@ Timeout.prototype.refresh = function () {
 Timeout.prototype.unref = function () {
   if (this[kRefed]) {
     this[kRefed] = false;
-    Deno.unrefTimer(this[kTimerId]);
+    system.unrefTimer(this[kTimerId]);
   }
   return this;
 };
@@ -103,7 +103,7 @@ Timeout.prototype.unref = function () {
 Timeout.prototype.ref = function () {
   if (!this[kRefed]) {
     this[kRefed] = true;
-    Deno.refTimer(this[kTimerId]);
+    system.refTimer(this[kTimerId]);
   }
   return this;
 };

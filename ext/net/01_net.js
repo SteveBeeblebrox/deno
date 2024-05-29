@@ -117,9 +117,9 @@ class Conn {
 
   get rid() {
     internals.warnOnDeprecatedApi(
-      "Deno.Conn.rid",
+      "system.Conn.rid",
       new Error().stack,
-      "Use `Deno.Conn` instance methods instead.",
+      "Use `system.Conn` instance methods instead.",
     );
     return this.#rid;
   }
@@ -221,9 +221,9 @@ class TcpConn extends Conn {
 
   get rid() {
     internals.warnOnDeprecatedApi(
-      "Deno.TcpConn.rid",
+      "system.TcpConn.rid",
       new Error().stack,
-      "Use `Deno.TcpConn` instance methods instead.",
+      "Use `system.TcpConn` instance methods instead.",
     );
     return this.#rid;
   }
@@ -251,9 +251,9 @@ class UnixConn extends Conn {
 
   get rid() {
     internals.warnOnDeprecatedApi(
-      "Deno.UnixConn.rid",
+      "system.UnixConn.rid",
       new Error().stack,
-      "Use `Deno.UnixConn` instance methods instead.",
+      "Use `system.UnixConn` instance methods instead.",
     );
     return this.#rid;
   }
@@ -282,9 +282,9 @@ class Listener {
 
   get rid() {
     internals.warnOnDeprecatedApi(
-      "Deno.Listener.rid",
+      "system.Listener.rid",
       new Error().stack,
-      "Use `Deno.Listener` instance methods instead.",
+      "Use `system.Listener` instance methods instead.",
     );
     return this.#rid;
   }
@@ -539,7 +539,7 @@ function listen(args) {
     case "unix": {
       const { 0: rid, 1: path } = op_net_listen_unix(
         args.path,
-        args[listenOptionApiName] ?? "Deno.listen",
+        args[listenOptionApiName] ?? "system.listen",
       );
       const addr = {
         transport: "unix",

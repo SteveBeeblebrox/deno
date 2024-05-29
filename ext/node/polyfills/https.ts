@@ -114,14 +114,14 @@ export const globalAgent = new Agent({
 class HttpsClientRequest extends ClientRequest {
   override _encrypted: true;
   override defaultProtocol = "https:";
-  override _getClient(): Deno.HttpClient | undefined {
+  override _getClient(): system.HttpClient | undefined {
     if (caCerts === null) {
       return undefined;
     }
     if (caCerts !== undefined) {
       return createHttpClient({ caCerts, http2: false });
     }
-    // const status = await Deno.permissions.query({
+    // const status = await system.permissions.query({
     //   name: "env",
     //   variable: "NODE_EXTRA_CA_CERTS",
     // });
@@ -129,12 +129,12 @@ class HttpsClientRequest extends ClientRequest {
     //   caCerts = null;
     //   return undefined;
     // }
-    const certFilename = Deno.env.get("NODE_EXTRA_CA_CERTS");
+    const certFilename = system.env.get("NODE_EXTRA_CA_CERTS");
     if (!certFilename) {
       caCerts = null;
       return undefined;
     }
-    const caCert = Deno.readTextFileSync(certFilename);
+    const caCert = system.readTextFileSync(certFilename);
     caCerts = [caCert];
     return createHttpClient({ caCerts, http2: false });
   }

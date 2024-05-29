@@ -1757,7 +1757,7 @@ export function _createServerHandle(
 
     if (isWindows) {
       const instances = Number.parseInt(
-        Deno.env.get("NODE_PENDING_PIPE_INSTANCES") ?? "",
+        system.env.get("NODE_PENDING_PIPE_INSTANCES") ?? "",
       );
 
       if (!Number.isNaN(instances)) {

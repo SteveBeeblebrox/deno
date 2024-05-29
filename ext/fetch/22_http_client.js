@@ -20,12 +20,12 @@ const { internalRidSymbol } = core;
 const { ObjectDefineProperty } = primordials;
 
 /**
- * @param {Deno.CreateHttpClientOptions} options
+ * @param {system.CreateHttpClientOptions} options
  * @returns {HttpClient}
  */
 function createHttpClient(options) {
   options.caCerts ??= [];
-  const keyPair = loadTlsKeyPair("Deno.createHttpClient", options);
+  const keyPair = loadTlsKeyPair("system.createHttpClient", options);
   return new HttpClient(
     op_fetch_custom_client(
       options,

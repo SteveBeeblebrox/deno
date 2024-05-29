@@ -311,7 +311,7 @@ where
   {
     let mut s = state.borrow_mut();
     let permissions = s.borrow_mut::<NP>();
-    permissions.check_net(&(hostname, Some(0)), "Deno.startTls()")?;
+    permissions.check_net(&(hostname, Some(0)), "system.startTls()")?;
   }
 
   let ca_certs = args
@@ -399,9 +399,9 @@ where
     let mut s = state.borrow_mut();
     let permissions = s.borrow_mut::<NP>();
     permissions
-      .check_net(&(&addr.hostname, Some(addr.port)), "Deno.connectTls()")?;
+      .check_net(&(&addr.hostname, Some(addr.port)), "system.connectTls()")?;
     if let Some(path) = cert_file {
-      permissions.check_read(Path::new(path), "Deno.connectTls()")?;
+      permissions.check_read(Path::new(path), "system.connectTls()")?;
     }
   }
 
@@ -498,13 +498,13 @@ where
   NP: NetPermissions + 'static,
 {
   if args.reuse_port {
-    super::check_unstable(state, "Deno.listenTls({ reusePort: true })");
+    super::check_unstable(state, "system.listenTls({ reusePort: true })");
   }
 
   {
     let permissions = state.borrow_mut::<NP>();
     permissions
-      .check_net(&(&addr.hostname, Some(addr.port)), "Deno.listenTls()")?;
+      .check_net(&(&addr.hostname, Some(addr.port)), "system.listenTls()")?;
   }
 
   let bind_addr = resolve_addr_sync(&addr.hostname, addr.port)?
@@ -520,7 +520,7 @@ where
     .map(|s| s.into_bytes())
     .collect();
   let listener = match keys.take() {
-    TlsKeys::Null => Err(anyhow!("Deno.listenTls requires a key")),
+    TlsKeys::Null => Err(anyhow!("system.listenTls requires a key")),
     TlsKeys::Static(TlsKey(cert, key)) => {
       let mut tls_config = ServerConfig::builder()
         .with_safe_defaults()

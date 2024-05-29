@@ -82,7 +82,7 @@ impl<P: RemoteDbHandlerPermissions + 'static> denokv_remote::RemotePermissions
   fn check_net_url(&self, url: &Url) -> Result<(), anyhow::Error> {
     let mut state = self.state.borrow_mut();
     let permissions = state.borrow_mut::<P>();
-    permissions.check_net_url(url, "Deno.openKv")
+    permissions.check_net_url(url, "system.openKv")
   }
 }
 
@@ -111,7 +111,7 @@ impl<P: RemoteDbHandlerPermissions + 'static> DatabaseHandler
       let mut state = state.borrow_mut();
       let permissions = state.borrow_mut::<P>();
       permissions.check_env(ENV_VAR_NAME)?;
-      permissions.check_net_url(&parsed_url, "Deno.openKv")?;
+      permissions.check_net_url(&parsed_url, "system.openKv")?;
     }
 
     let access_token = std::env::var(ENV_VAR_NAME)

@@ -94,7 +94,7 @@ export class TCP extends ConnectionWrap {
   #remotePort?: number;
 
   #backlog?: number;
-  #listener!: Deno.Listener;
+  #listener!: system.Listener;
   #connections = 0;
 
   #closed = false;
@@ -105,7 +105,7 @@ export class TCP extends ConnectionWrap {
    * @param type The socket type.
    * @param conn Optional connection object to wrap.
    */
-  constructor(type: number, conn?: Deno.Conn) {
+  constructor(type: number, conn?: system.Conn) {
     let provider: providerType;
 
     switch (type) {
@@ -129,11 +129,11 @@ export class TCP extends ConnectionWrap {
     // TODO(cmorten): the handling of new connections and construction feels
     // a little off. Suspect duplicating in some fashion.
     if (conn && provider === providerType.TCPWRAP) {
-      const localAddr = conn.localAddr as Deno.NetAddr;
+      const localAddr = conn.localAddr as system.NetAddr;
       this.#address = localAddr.hostname;
       this.#port = localAddr.port;
 
-      const remoteAddr = conn.remoteAddr as Deno.NetAddr;
+      const remoteAddr = conn.remoteAddr as system.NetAddr;
       this.#remoteAddress = remoteAddr.hostname;
       this.#remotePort = remoteAddr.port;
       this.#remoteFamily = isIP(remoteAddr.hostname);
@@ -209,13 +209,13 @@ export class TCP extends ConnectionWrap {
     let listener;
 
     try {
-      listener = Deno.listen(listenOptions);
+      listener = system.listen(listenOptions);
     } catch (e) {
-      if (e instanceof Deno.errors.AddrInUse) {
+      if (e instanceof system.errors.AddrInUse) {
         return codeMap.get("EADDRINUSE")!;
-      } else if (e instanceof Deno.errors.AddrNotAvailable) {
+      } else if (e instanceof system.errors.AddrNotAvailable) {
         return codeMap.get("EADDRNOTAVAIL")!;
-      } else if (e instanceof Deno.errors.PermissionDenied) {
+      } else if (e instanceof system.errors.PermissionDenied) {
         throw e;
       }
 
@@ -223,7 +223,7 @@ export class TCP extends ConnectionWrap {
       return codeMap.get("UNKNOWN")!;
     }
 
-    const address = listener.addr as Deno.NetAddr;
+    const address = listener.addr as system.NetAddr;
     this.#address = address.hostname;
     this.#port = address.port;
 
@@ -337,14 +337,14 @@ export class TCP extends ConnectionWrap {
   #bind(address: string, port: number, _flags: number): number {
     // Deno doesn't currently separate bind from connect etc.
     // REF:
-    // - https://doc.deno.land/deno/stable/~/Deno.connect
-    // - https://doc.deno.land/deno/stable/~/Deno.listen
+    // - https://doc.deno.land/deno/stable/~/system.connect
+    // - https://doc.deno.land/deno/stable/~/system.listen
     //
     // This also means we won't be connecting from the specified local address
-    // and port as providing these is not an option in Deno.
+    // and port as providing these is not an option in system.
     // REF:
-    // - https://doc.deno.land/deno/stable/~/Deno.ConnectOptions
-    // - https://doc.deno.land/deno/stable/~/Deno.ListenOptions
+    // - https://doc.deno.land/deno/stable/~/system.ConnectOptions
+    // - https://doc.deno.land/deno/stable/~/system.ListenOptions
 
     this.#address = address;
     this.#port = port;
@@ -364,17 +364,17 @@ export class TCP extends ConnectionWrap {
     this.#remotePort = port;
     this.#remoteFamily = isIP(address);
 
-    const connectOptions: Deno.ConnectOptions = {
+    const connectOptions: system.ConnectOptions = {
       hostname: address,
       port,
       transport: "tcp",
     };
 
-    Deno.connect(connectOptions).then(
-      (conn: Deno.Conn) => {
+    system.connect(connectOptions).then(
+      (conn: system.Conn) => {
         // Incorrect / backwards, but correcting the local address and port with
-        // what was actually used given we can't actually specify these in Deno.
-        const localAddr = conn.localAddr as Deno.NetAddr;
+        // what was actually used given we can't actually specify these in system.
+        const localAddr = conn.localAddr as system.NetAddr;
         this.#address = req.localAddress = localAddr.hostname;
         this.#port = req.localPort = localAddr.port;
         this[kStreamBaseField] = conn;
@@ -430,12 +430,12 @@ export class TCP extends ConnectionWrap {
       return;
     }
 
-    let connection: Deno.Conn;
+    let connection: system.Conn;
 
     try {
       connection = await this.#listener.accept();
     } catch (e) {
-      if (e instanceof Deno.errors.BadResource && this.#closed) {
+      if (e instanceof system.errors.BadResource && this.#closed) {
         // Listener and server has closed.
         return;
       }

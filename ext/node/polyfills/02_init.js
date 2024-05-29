@@ -33,8 +33,8 @@ function initialize(args) {
     // but it's the only way to get `args` and `version` and this point.
     internals.__bootstrapNodeProcess(
       argv0,
-      Deno.args,
-      Deno.version,
+      system.args,
+      system.version,
       nodeDebug ?? "",
     );
     internals.__initWorkerThreads(
@@ -43,7 +43,7 @@ function initialize(args) {
       maybeWorkerMetadata,
     );
     internals.__setupChildProcessIpcChannel();
-    // `Deno[Deno.internal].requireImpl` will be unreachable after this line.
+    // `Deno[system.internal].requireImpl` will be unreachable after this line.
     delete internals.requireImpl;
   } else {
     // Warm up the process module

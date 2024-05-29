@@ -180,7 +180,7 @@ class Location {
         },
         enumerable: true,
       },
-      [SymbolFor("Deno.privateCustomInspect")]: {
+      [SymbolFor("system.privateCustomInspect")]: {
         value: function (inspect, inspectOptions) {
           return `${this.constructor.name} ${
             inspect({
@@ -338,7 +338,7 @@ ObjectDefineProperties(WorkerLocation.prototype, {
     value: "WorkerLocation",
     configurable: true,
   },
-  [SymbolFor("Deno.privateCustomInspect")]: {
+  [SymbolFor("system.privateCustomInspect")]: {
     value: function (inspect, inspectOptions) {
       return `${this.constructor.name} ${
         inspect({

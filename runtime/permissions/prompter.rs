@@ -320,7 +320,7 @@ impl PermissionPrompter for TtyPrompter {
     {
       let mut output = String::new();
       write!(&mut output, "┌ {PERMISSION_EMOJI}  ").unwrap();
-      write!(&mut output, "{}", colors::bold("Deno requests ")).unwrap();
+      write!(&mut output, "{}", colors::bold("system requests ")).unwrap();
       write!(&mut output, "{}", colors::bold(message.clone())).unwrap();
       writeln!(&mut output, "{}", colors::bold(".")).unwrap();
       if let Some(api_name) = api_name.clone() {

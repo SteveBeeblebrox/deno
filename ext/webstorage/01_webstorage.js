@@ -155,7 +155,7 @@ function createStorage(persistent) {
     },
   });
 
-  storage[SymbolFor("Deno.privateCustomInspect")] = function (
+  storage[SymbolFor("system.privateCustomInspect")] = function (
     inspect,
     inspectOptions,
   ) {

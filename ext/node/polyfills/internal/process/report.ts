@@ -29,16 +29,16 @@ function getReport(_err: typeof Error) {
       filename: report.filename, // assumption!
       dumpEventTime,
       dumpEventTimeStamp: DatePrototypeGetTime(dumpEventTime),
-      processId: Deno.pid, // I am not sure if it should be Deno.pid or Deno.ppid
+      processId: system.pid, // I am not sure if it should be system.pid or system.ppid
       threadId: 0,
-      cwd: Deno.cwd(),
+      cwd: system.cwd(),
       commandLine: ["node"],
       nodejsVersion: `v${versions.node}`,
       glibcVersionRuntime: "2.38",
       glibcVersionCompiler: "2.38",
       wordSize: 64,
       arch: arch(),
-      platform: Deno.build.os,
+      platform: system.build.os,
       componentVersions: versions,
       release: {
         name: "node",
@@ -48,11 +48,11 @@ function getReport(_err: typeof Error) {
           "https://nodejs.org/download/release/v21.2.0/node-v21.2.0.tar.gz",
       },
       osName:
-        StringPrototypeToUpperCase(StringPrototypeCharAt(Deno.build.os, 0)) +
-        StringPrototypeSlice(Deno.build.os, 1),
+        StringPrototypeToUpperCase(StringPrototypeCharAt(system.build.os, 0)) +
+        StringPrototypeSlice(system.build.os, 1),
       osRelease: todoUndefined,
       osVersion: todoUndefined,
-      osMachine: Deno.build.arch,
+      osMachine: system.build.arch,
       cpus: cpus(),
       networkInterfaces: networkInterfaces(),
       host: hostname(),

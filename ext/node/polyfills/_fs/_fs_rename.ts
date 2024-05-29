@@ -16,7 +16,7 @@ export function rename(
 
   if (!callback) throw new Error("No callback function supplied");
 
-  Deno.rename(oldPath, newPath).then((_) => callback(), callback);
+  system.rename(oldPath, newPath).then((_) => callback(), callback);
 }
 
 export const renamePromise = promisify(rename) as (
@@ -28,5 +28,5 @@ export function renameSync(oldPath: string | URL, newPath: string | URL) {
   oldPath = oldPath instanceof URL ? pathFromURL(oldPath) : oldPath;
   newPath = newPath instanceof URL ? pathFromURL(newPath) : newPath;
 
-  Deno.renameSync(oldPath, newPath);
+  system.renameSync(oldPath, newPath);
 }

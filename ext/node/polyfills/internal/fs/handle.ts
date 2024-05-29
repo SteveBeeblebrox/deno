@@ -134,7 +134,7 @@ export class FileHandle extends EventEmitter {
   }
 
   close(): Promise<void> {
-    // Note that Deno.close is not async
+    // Note that system.close is not async
     return Promise.resolve(core.close(this.fd));
   }
 }

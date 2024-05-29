@@ -301,7 +301,7 @@ function createByteStruct(types) {
   // types can be "date", "bool" or "u64".
   let offset = 0;
   let str =
-    'const unix = Deno.build.os === "darwin" || Deno.build.os === "linux" || Deno.build.os === "android" || Deno.build.os === "openbsd" || Deno.build.os === "freebsd"; return {';
+    'const unix = system.build.os === "darwin" || system.build.os === "linux" || system.build.os === "android" || system.build.os === "openbsd" || system.build.os === "freebsd"; return {';
   const typeEntries = ObjectEntries(types);
   for (let i = 0; i < typeEntries.length; ++i) {
     let { 0: name, 1: type } = typeEntries[i];
@@ -622,7 +622,7 @@ function openSync(
     options,
   );
 
-  return new FsFile(rid, SymbolFor("Deno.internal.FsFile"));
+  return new FsFile(rid, SymbolFor("system.internal.FsFile"));
 }
 
 async function open(
@@ -635,7 +635,7 @@ async function open(
     options,
   );
 
-  return new FsFile(rid, SymbolFor("Deno.internal.FsFile"));
+  return new FsFile(rid, SymbolFor("system.internal.FsFile"));
 }
 
 function createSync(path) {
@@ -668,15 +668,15 @@ class FsFile {
       value: rid,
     });
     this.#rid = rid;
-    if (!symbol || symbol !== SymbolFor("Deno.internal.FsFile")) {
+    if (!symbol || symbol !== SymbolFor("system.internal.FsFile")) {
       internals.warnOnDeprecatedApi(
-        "new Deno.FsFile()",
+        "new system.FsFile()",
         new Error().stack,
-        "Use `Deno.open` or `Deno.openSync` instead.",
+        "Use `system.open` or `system.openSync` instead.",
       );
       if (internals.future) {
         throw new TypeError(
-          "`Deno.FsFile` cannot be constructed, use `Deno.open()` or `Deno.openSync()` instead.",
+          "`system.FsFile` cannot be constructed, use `system.open()` or `system.openSync()` instead.",
         );
       }
     }
@@ -684,9 +684,9 @@ class FsFile {
 
   get rid() {
     internals.warnOnDeprecatedApi(
-      "Deno.FsFile.rid",
+      "system.FsFile.rid",
       new Error().stack,
-      "Use `Deno.FsFile` methods directly instead.",
+      "Use `system.FsFile` methods directly instead.",
     );
     return this.#rid;
   }

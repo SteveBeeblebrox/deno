@@ -48,14 +48,14 @@ export function resolve(...pathSegments: string[]): string {
       if (typeof Deno?.cwd !== "function") {
         throw new TypeError("Resolved a drive-letter-less path without a CWD.");
       }
-      path = Deno.cwd();
+      path = system.cwd();
     } else {
       if (
         typeof Deno?.env?.get !== "function" || typeof Deno?.cwd !== "function"
       ) {
         throw new TypeError("Resolved a relative path without a CWD.");
       }
-      path = Deno.cwd();
+      path = system.cwd();
 
       // Verify that a cwd was found and that it actually points
       // to our drive. If not, default to the drive's root.

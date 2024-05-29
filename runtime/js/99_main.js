@@ -585,16 +585,16 @@ function exposeUnstableFeaturesForWindowOrWorkerGlobalScope(options) {
 // NOTE(bartlomieju): remove all the ops that have already been imported using
 // "virtual op module" (`ext:core/ops`).
 const NOT_IMPORTED_OPS = [
-  // Related to `Deno.bench()` API
+  // Related to `system.bench()` API
   "op_bench_now",
   "op_dispatch_bench_event",
   "op_register_bench",
   "op_bench_get_origin",
 
-  // Related to `Deno.jupyter` API
+  // Related to `system.jupyter` API
   "op_jupyter_broadcast",
 
-  // Related to `Deno.test()` API
+  // Related to `system.test()` API
   "op_test_event_step_result_failed",
   "op_test_event_step_result_ignored",
   "op_test_event_step_result_ok",
@@ -626,28 +626,28 @@ function removeImportedOps() {
   }
 }
 
-// FIXME(bartlomieju): temporarily add whole `Deno.core` to
-// `Deno[Deno.internal]` namespace. It should be removed and only necessary
+// FIXME(bartlomieju): temporarily add whole `system.core` to
+// `Deno[system.internal]` namespace. It should be removed and only necessary
 // methods should be left there.
 ObjectAssign(internals, { core, warnOnDeprecatedApi });
-const internalSymbol = Symbol("Deno.internal");
+const internalSymbol = Symbol("system.internal");
 const finalDenoNs = {
   internal: internalSymbol,
   [internalSymbol]: internals,
   resources() {
-    internals.warnOnDeprecatedApi("Deno.resources()", new Error().stack);
+    internals.warnOnDeprecatedApi("system.resources()", new Error().stack);
     return core.resources();
   },
   close(rid) {
     internals.warnOnDeprecatedApi(
-      "Deno.close()",
+      "system.close()",
       new Error().stack,
       "Use `closer.close()` instead.",
     );
     core.close(rid);
   },
   ...denoNs,
-  // Deno.test and Deno.bench are noops here, but kept for compatibility; so
+  // system.test and system.bench are noops here, but kept for compatibility; so
   // that they don't cause errors when used outside of `deno test`/`deno bench`
   // contexts.
   test: () => {},
@@ -667,9 +667,9 @@ ObjectDefineProperties(finalDenoNs, {
   customInspect: {
     get() {
       warnOnDeprecatedApi(
-        "Deno.customInspect",
+        "system.customInspect",
         new Error().stack,
-        'Use `Symbol.for("Deno.customInspect")` instead.',
+        'Use `Symbol.for("system.customInspect")` instead.',
       );
       return internals.future ? undefined : customInspect;
     },
@@ -831,7 +831,7 @@ function bootstrapMainRuntime(runtimeOptions, warmup = false) {
             return jupyterNs;
           }
           throw new Error(
-            "Deno.jupyter is only available in `deno jupyter` subcommand.",
+            "system.jupyter is only available in `deno jupyter` subcommand.",
           );
         },
         set(val) {
@@ -859,7 +859,7 @@ function bootstrapMainRuntime(runtimeOptions, warmup = false) {
 
     // Setup `Deno` global - we're actually overriding already existing global
     // `Deno` with `Deno` namespace from "./deno.ts".
-    ObjectDefineProperty(globalThis, "Deno", core.propReadOnly(finalDenoNs));
+    ObjectDefineProperty(globalThis, "system", core.propReadOnly(finalDenoNs));
 
     if (nodeBootstrap) {
       nodeBootstrap({
@@ -871,34 +871,34 @@ function bootstrapMainRuntime(runtimeOptions, warmup = false) {
     }
     if (future) {
       delete globalThis.window;
-      delete Deno.Buffer;
-      delete Deno.close;
-      delete Deno.copy;
-      delete Deno.File;
-      delete Deno.fstat;
-      delete Deno.fstatSync;
-      delete Deno.ftruncate;
-      delete Deno.ftruncateSync;
-      delete Deno.flock;
-      delete Deno.flockSync;
-      delete Deno.FsFile.prototype.rid;
-      delete Deno.funlock;
-      delete Deno.funlockSync;
-      delete Deno.iter;
-      delete Deno.iterSync;
-      delete Deno.metrics;
-      delete Deno.readAll;
-      delete Deno.readAllSync;
-      delete Deno.read;
-      delete Deno.readSync;
-      delete Deno.resources;
-      delete Deno.seek;
-      delete Deno.seekSync;
-      delete Deno.shutdown;
-      delete Deno.writeAll;
-      delete Deno.writeAllSync;
-      delete Deno.write;
-      delete Deno.writeSync;
+      delete system.Buffer;
+      delete system.close;
+      delete system.copy;
+      delete system.File;
+      delete system.fstat;
+      delete system.fstatSync;
+      delete system.ftruncate;
+      delete system.ftruncateSync;
+      delete system.flock;
+      delete system.flockSync;
+      delete system.FsFile.prototype.rid;
+      delete system.funlock;
+      delete system.funlockSync;
+      delete system.iter;
+      delete system.iterSync;
+      delete system.metrics;
+      delete system.readAll;
+      delete system.readAllSync;
+      delete system.read;
+      delete system.readSync;
+      delete system.resources;
+      delete system.seek;
+      delete system.seekSync;
+      delete system.shutdown;
+      delete system.writeAll;
+      delete system.writeAllSync;
+      delete system.write;
+      delete system.writeSync;
     }
   } else {
     // Warmup
@@ -972,7 +972,7 @@ function bootstrapWorkerRuntime(
     event.defineEventHandler(self, "message");
     event.defineEventHandler(self, "error", undefined, true);
 
-    // `Deno.exit()` is an alias to `self.close()`. Setting and exit
+    // `system.exit()` is an alias to `self.close()`. Setting and exit
     // code using an op in worker context is a no-op.
     os.setExitHandler((_exitCode) => {
       workerClose();
@@ -1018,7 +1018,7 @@ function bootstrapWorkerRuntime(
 
     // Setup `Deno` global - we're actually overriding already existing global
     // `Deno` with `Deno` namespace from "./deno.ts".
-    ObjectDefineProperty(globalThis, "Deno", core.propReadOnly(finalDenoNs));
+    ObjectDefineProperty(globalThis, "system", core.propReadOnly(finalDenoNs));
 
     const workerMetadata = maybeWorkerMetadata
       ? messagePort.deserializeJsMessageData(maybeWorkerMetadata)
@@ -1036,34 +1036,34 @@ function bootstrapWorkerRuntime(
     }
 
     if (future) {
-      delete Deno.Buffer;
-      delete Deno.close;
-      delete Deno.copy;
-      delete Deno.File;
-      delete Deno.fstat;
-      delete Deno.fstatSync;
-      delete Deno.ftruncate;
-      delete Deno.ftruncateSync;
-      delete Deno.flock;
-      delete Deno.flockSync;
-      delete Deno.FsFile.prototype.rid;
-      delete Deno.funlock;
-      delete Deno.funlockSync;
-      delete Deno.iter;
-      delete Deno.iterSync;
-      delete Deno.metrics;
-      delete Deno.readAll;
-      delete Deno.readAllSync;
-      delete Deno.read;
-      delete Deno.readSync;
-      delete Deno.resources;
-      delete Deno.seek;
-      delete Deno.seekSync;
-      delete Deno.shutdown;
-      delete Deno.writeAll;
-      delete Deno.writeAllSync;
-      delete Deno.write;
-      delete Deno.writeSync;
+      delete system.Buffer;
+      delete system.close;
+      delete system.copy;
+      delete system.File;
+      delete system.fstat;
+      delete system.fstatSync;
+      delete system.ftruncate;
+      delete system.ftruncateSync;
+      delete system.flock;
+      delete system.flockSync;
+      delete system.FsFile.prototype.rid;
+      delete system.funlock;
+      delete system.funlockSync;
+      delete system.iter;
+      delete system.iterSync;
+      delete system.metrics;
+      delete system.readAll;
+      delete system.readAllSync;
+      delete system.read;
+      delete system.readSync;
+      delete system.resources;
+      delete system.seek;
+      delete system.seekSync;
+      delete system.shutdown;
+      delete system.writeAll;
+      delete system.writeAllSync;
+      delete system.write;
+      delete system.writeSync;
     }
   } else {
     // Warmup

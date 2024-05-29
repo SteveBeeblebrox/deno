@@ -40,7 +40,7 @@ export function mkdir(
   }
   validateBoolean(recursive, "options.recursive");
 
-  Deno.mkdir(path, { recursive, mode })
+  system.mkdir(path, { recursive, mode })
     .then(() => {
       if (typeof callback === "function") {
         callback(null);
@@ -74,7 +74,7 @@ export function mkdirSync(path: string | URL, options?: MkdirOptions) {
   validateBoolean(recursive, "options.recursive");
 
   try {
-    Deno.mkdirSync(path, { recursive, mode });
+    system.mkdirSync(path, { recursive, mode });
   } catch (err) {
     throw denoErrorToNodeError(err as Error, { syscall: "mkdir", path });
   }

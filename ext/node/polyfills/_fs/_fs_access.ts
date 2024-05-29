@@ -30,7 +30,7 @@ export function access(
   mode = getValidMode(mode, "access");
   const cb = makeCallback(callback);
 
-  Deno.lstat(path).then((info) => {
+  system.lstat(path).then((info) => {
     if (info.mode === null) {
       // If the file mode is unavailable, we pretend it has
       // the permission
@@ -39,7 +39,7 @@ export function access(
     }
     const m = +mode || 0;
     let fileMode = +info.mode || 0;
-    if (Deno.build.os !== "windows" && info.uid === Deno.uid()) {
+    if (system.build.os !== "windows" && info.uid === system.uid()) {
       // If the user is the owner of the file, then use the owner bits of
       // the file permission
       fileMode >>= 6;
@@ -60,7 +60,7 @@ export function access(
       cb(e);
     }
   }, (err) => {
-    if (err instanceof Deno.errors.NotFound) {
+    if (err instanceof system.errors.NotFound) {
       // deno-lint-ignore no-explicit-any
       const e: any = new Error(
         `ENOENT: no such file or directory, access '${path}'`,
@@ -85,7 +85,7 @@ export function accessSync(path: string | Buffer | URL, mode?: number) {
   path = getValidatedPath(path).toString();
   mode = getValidMode(mode, "access");
   try {
-    const info = Deno.lstatSync(path.toString());
+    const info = system.lstatSync(path.toString());
     if (info.mode === null) {
       // If the file mode is unavailable, we pretend it has
       // the permission
@@ -93,7 +93,7 @@ export function accessSync(path: string | Buffer | URL, mode?: number) {
     }
     const m = +mode! || 0;
     let fileMode = +info.mode! || 0;
-    if (Deno.build.os !== "windows" && info.uid === Deno.uid()) {
+    if (system.build.os !== "windows" && info.uid === system.uid()) {
       // If the user is the owner of the file, then use the owner bits of
       // the file permission
       fileMode >>= 6;
@@ -113,7 +113,7 @@ export function accessSync(path: string | Buffer | URL, mode?: number) {
       throw e;
     }
   } catch (err) {
-    if (err instanceof Deno.errors.NotFound) {
+    if (err instanceof system.errors.NotFound) {
       // deno-lint-ignore no-explicit-any
       const e: any = new Error(
         `ENOENT: no such file or directory, access '${path}'`,

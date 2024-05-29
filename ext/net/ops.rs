@@ -143,7 +143,7 @@ where
     let mut s = state.borrow_mut();
     s.borrow_mut::<NP>().check_net(
       &(&addr.hostname, Some(addr.port)),
-      "Deno.DatagramConn.send()",
+      "system.DatagramConn.send()",
     )?;
   }
   let addr = resolve_addr(&addr.hostname, addr.port)
@@ -313,7 +313,7 @@ where
     let mut state_ = state.borrow_mut();
     state_
       .borrow_mut::<NP>()
-      .check_net(&(&addr.hostname, Some(addr.port)), "Deno.connect()")?;
+      .check_net(&(&addr.hostname, Some(addr.port)), "system.connect()")?;
   }
 
   let addr = resolve_addr(&addr.hostname, addr.port)
@@ -358,11 +358,11 @@ where
   NP: NetPermissions + 'static,
 {
   if reuse_port {
-    super::check_unstable(state, "Deno.listen({ reusePort: true })");
+    super::check_unstable(state, "system.listen({ reusePort: true })");
   }
   state
     .borrow_mut::<NP>()
-    .check_net(&(&addr.hostname, Some(addr.port)), "Deno.listen()")?;
+    .check_net(&(&addr.hostname, Some(addr.port)), "system.listen()")?;
   let addr = resolve_addr_sync(&addr.hostname, addr.port)?
     .next()
     .ok_or_else(|| generic_error("No resolved address found"))?;
@@ -386,7 +386,7 @@ where
 {
   state
     .borrow_mut::<NP>()
-    .check_net(&(&addr.hostname, Some(addr.port)), "Deno.listenDatagram()")?;
+    .check_net(&(&addr.hostname, Some(addr.port)), "system.listenDatagram()")?;
   let addr = resolve_addr_sync(&addr.hostname, addr.port)?
     .next()
     .ok_or_else(|| generic_error("No resolved address found"))?;
@@ -453,7 +453,7 @@ pub fn op_net_listen_udp<NP>(
 where
   NP: NetPermissions + 'static,
 {
-  super::check_unstable(state, "Deno.listenDatagram");
+  super::check_unstable(state, "system.listenDatagram");
   net_listen_udp::<NP>(state, addr, reuse_address, loopback)
 }
 
@@ -583,7 +583,7 @@ where
       let socker_addr = &ns.socket_addr;
       let ip = socker_addr.ip().to_string();
       let port = socker_addr.port();
-      perm.check_net(&(ip, Some(port)), "Deno.resolveDns()")?;
+      perm.check_net(&(ip, Some(port)), "system.resolveDns()")?;
     }
   }
 

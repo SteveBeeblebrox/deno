@@ -41,7 +41,7 @@ export function copyFile(
   const cb = makeCallback(callback);
 
   if ((modeNum & fs.COPYFILE_EXCL) === fs.COPYFILE_EXCL) {
-    Deno.lstat(destStr).then(() => {
+    system.lstat(destStr).then(() => {
       // deno-lint-ignore no-explicit-any
       const e: any = new Error(
         `EEXIST: file already exists, copyfile '${srcStr}' -> '${destStr}'`,
@@ -51,13 +51,13 @@ export function copyFile(
       e.code = "EEXIST";
       cb(e);
     }, (e) => {
-      if (e instanceof Deno.errors.NotFound) {
-        Deno.copyFile(srcStr, destStr).then(() => cb(null), cb);
+      if (e instanceof system.errors.NotFound) {
+        system.copyFile(srcStr, destStr).then(() => cb(null), cb);
       }
       cb(e);
     });
   } else {
-    Deno.copyFile(srcStr, destStr).then(() => cb(null), cb);
+    system.copyFile(srcStr, destStr).then(() => cb(null), cb);
   }
 }
 
@@ -78,15 +78,15 @@ export function copyFileSync(
 
   if ((modeNum & fs.COPYFILE_EXCL) === fs.COPYFILE_EXCL) {
     try {
-      Deno.lstatSync(destStr);
+      system.lstatSync(destStr);
       throw new Error(`A file exists at the destination: ${destStr}`);
     } catch (e) {
-      if (e instanceof Deno.errors.NotFound) {
-        Deno.copyFileSync(srcStr, destStr);
+      if (e instanceof system.errors.NotFound) {
+        system.copyFileSync(srcStr, destStr);
       }
       throw e;
     }
   } else {
-    Deno.copyFileSync(srcStr, destStr);
+    system.copyFileSync(srcStr, destStr);
   }
 }

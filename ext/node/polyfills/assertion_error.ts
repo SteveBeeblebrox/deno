@@ -30,7 +30,7 @@ import * as io from "ext:deno_io/12_io.js";
 
 function getConsoleWidth(): number {
   try {
-    return Deno.consoleSize().columns;
+    return system.consoleSize().columns;
   } catch {
     return 80;
   }
@@ -409,7 +409,7 @@ export class AssertionError extends Error {
       if (io.stderr.isTerminal()) {
         // Reset on each call to make sure we handle dynamically set environment
         // variables correct.
-        if (Deno.noColor) {
+        if (system.noColor) {
           blue = "";
           green = "";
           defaultColor = "";

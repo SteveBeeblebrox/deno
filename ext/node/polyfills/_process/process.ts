@@ -35,13 +35,13 @@ export const cwd = fs.cwd;
 /** https://nodejs.org/api/process.html#process_process_nexttick_callback_args */
 export const nextTick = _nextTick;
 
-/** Wrapper of Deno.env.get, which doesn't throw type error when
+/** Wrapper of system.env.get, which doesn't throw type error when
  * the env name has "=" or "\0" in it. */
 function denoEnvGet(name: string) {
   try {
-    return Deno.env.get(name);
+    return system.env.get(name);
   } catch (e) {
-    if (e instanceof TypeError || e instanceof Deno.errors.PermissionDenied) {
+    if (e instanceof TypeError || e instanceof system.errors.PermissionDenied) {
       return undefined;
     }
     throw e;
@@ -72,7 +72,7 @@ export const env: InstanceType<ObjectConstructor> & Record<string, string> =
 
       return envValue;
     },
-    ownKeys: () => Reflect.ownKeys(Deno.env.toObject()),
+    ownKeys: () => Reflect.ownKeys(system.env.toObject()),
     getOwnPropertyDescriptor: (_target, name) => {
       const value = denoEnvGet(String(name));
       if (value) {
@@ -84,12 +84,12 @@ export const env: InstanceType<ObjectConstructor> & Record<string, string> =
       }
     },
     set(_target, prop, value) {
-      Deno.env.set(String(prop), String(value));
+      system.env.set(String(prop), String(value));
       return true; // success
     },
     has: (_target, prop) => typeof denoEnvGet(String(prop)) === "string",
     deleteProperty(_target, key) {
-      Deno.env.delete(String(key));
+      system.env.delete(String(key));
       return true;
     },
   });
@@ -109,8 +109,8 @@ export const version = "v20.11.1";
  *
  * This value is hard coded to latest stable release of Node, as
  * some packages are checking it for compatibility. Previously
- * it contained only output of `Deno.version`, but that led to incompability
- * with some packages. Value of `v8` field is still taken from `Deno.version`.
+ * it contained only output of `system.version`, but that led to incompability
+ * with some packages. Value of `v8` field is still taken from `system.version`.
  */
 export const versions = {
   node: "20.11.1",

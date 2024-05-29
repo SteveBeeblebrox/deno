@@ -104,10 +104,10 @@ where
     let mut state_ = state.borrow_mut();
     state_
       .borrow_mut::<NP>()
-      .check_read(address_path, "Deno.connect()")?;
+      .check_read(address_path, "system.connect()")?;
     state_
       .borrow_mut::<NP>()
-      .check_write(address_path, "Deno.connect()")?;
+      .check_write(address_path, "system.connect()")?;
   }
   let unix_stream = UnixStream::connect(Path::new(&path)).await?;
   let local_addr = unix_stream.local_addr()?;
@@ -158,7 +158,7 @@ where
   {
     let mut s = state.borrow_mut();
     s.borrow_mut::<NP>()
-      .check_write(address_path, "Deno.DatagramConn.send()")?;
+      .check_write(address_path, "system.DatagramConn.send()")?;
   }
 
   let resource = state
@@ -206,8 +206,8 @@ where
 {
   let address_path = Path::new(&path);
   let permissions = state.borrow_mut::<NP>();
-  permissions.check_read(address_path, "Deno.listenDatagram()")?;
-  permissions.check_write(address_path, "Deno.listenDatagram()")?;
+  permissions.check_read(address_path, "system.listenDatagram()")?;
+  permissions.check_write(address_path, "system.listenDatagram()")?;
   let socket = UnixDatagram::bind(address_path)?;
   let local_addr = socket.local_addr()?;
   let pathname = local_addr.as_pathname().map(pathstring).transpose()?;
@@ -228,7 +228,7 @@ pub fn op_net_listen_unixpacket<NP>(
 where
   NP: NetPermissions + 'static,
 {
-  super::check_unstable(state, "Deno.listenDatagram");
+  super::check_unstable(state, "system.listenDatagram");
   net_listen_unixpacket::<NP>(state, path)
 }
 

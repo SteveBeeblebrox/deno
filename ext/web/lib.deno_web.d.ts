@@ -1134,9 +1134,9 @@ declare function structuredClone<T = any>(
  *
  * @example
  * ```ts
- * await Deno.stdin.readable
+ * await system.stdin.readable
  *   .pipeThrough(new CompressionStream("gzip"))
- *   .pipeTo(Deno.stdout.writable);
+ *   .pipeTo(system.stdout.writable);
  * ```
  *
  * @category Streams
@@ -1151,9 +1151,9 @@ declare interface CompressionStream {
  *
  * @example
  * ```ts
- * await Deno.stdin.readable
+ * await system.stdin.readable
  *   .pipeThrough(new CompressionStream("gzip"))
- *   .pipeTo(Deno.stdout.writable);
+ *   .pipeTo(system.stdout.writable);
  * ```
  *
  * @category Streams
@@ -1175,8 +1175,8 @@ declare var CompressionStream: {
  *
  * @example
  * ```ts
- * const input = await Deno.open("./file.txt.gz");
- * const output = await Deno.create("./file.txt");
+ * const input = await system.open("./file.txt.gz");
+ * const output = await system.create("./file.txt");
  *
  * await input.readable
  *   .pipeThrough(new DecompressionStream("gzip"))
@@ -1195,8 +1195,8 @@ declare interface DecompressionStream {
  *
  * @example
  * ```ts
- * const input = await Deno.open("./file.txt.gz");
- * const output = await Deno.create("./file.txt");
+ * const input = await system.open("./file.txt.gz");
+ * const output = await system.create("./file.txt");
  *
  * await input.readable
  *   .pipeThrough(new DecompressionStream("gzip"))

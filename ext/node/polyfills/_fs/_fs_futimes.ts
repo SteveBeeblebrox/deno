@@ -18,7 +18,7 @@ function getValidTime(
     typeof time === "number" &&
     (Number.isNaN(time) || !Number.isFinite(time))
   ) {
-    throw new Deno.errors.InvalidData(
+    throw new system.errors.InvalidData(
       `invalid ${name}, must not be infinity or NaN`,
     );
   }
@@ -33,14 +33,14 @@ export function futimes(
   callback: CallbackWithError,
 ) {
   if (!callback) {
-    throw new Deno.errors.InvalidData("No callback function supplied");
+    throw new system.errors.InvalidData("No callback function supplied");
   }
 
   atime = getValidTime(atime, "atime");
   mtime = getValidTime(mtime, "mtime");
 
   // TODO(@littledivy): Treat `fd` as real file descriptor.
-  new FsFile(fd, Symbol.for("Deno.internal.FsFile")).utime(atime, mtime).then(
+  new FsFile(fd, Symbol.for("system.internal.FsFile")).utime(atime, mtime).then(
     () => callback(null),
     callback,
   );
@@ -55,5 +55,5 @@ export function futimesSync(
   mtime = getValidTime(mtime, "mtime");
 
   // TODO(@littledivy): Treat `fd` as real file descriptor.
-  new FsFile(fd, Symbol.for("Deno.internal.FsFile")).utimeSync(atime, mtime);
+  new FsFile(fd, Symbol.for("system.internal.FsFile")).utimeSync(atime, mtime);
 }

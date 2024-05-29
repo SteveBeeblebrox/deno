@@ -49,7 +49,7 @@ export function opendir(
     validateInteger(bufferSize, "options.bufferSize", 1, 4294967295);
 
     /** Throws if path is invalid */
-    Deno.readDirSync(path);
+    system.readDirSync(path);
 
     dir = new Dir(path);
   } catch (error) {
@@ -83,7 +83,7 @@ export function opendirSync(
 
   try {
     /** Throws if path is invalid */
-    Deno.readDirSync(path);
+    system.readDirSync(path);
 
     return new Dir(path);
   } catch (err) {

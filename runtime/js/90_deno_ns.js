@@ -33,7 +33,7 @@ import * as webgpuSurface from "ext:deno_webgpu/02_surface.js";
 
 const denoNs = {
   metrics: () => {
-    internals.warnOnDeprecatedApi("Deno.metrics()", new Error().stack);
+    internals.warnOnDeprecatedApi("system.metrics()", new Error().stack);
     return core.metrics();
   },
   Process: process.Process,
@@ -83,33 +83,33 @@ const denoNs = {
   truncate: fs.truncate,
   ftruncateSync(rid, len) {
     internals.warnOnDeprecatedApi(
-      "Deno.ftruncateSync()",
+      "system.ftruncateSync()",
       new Error().stack,
-      "Use `Deno.FsFile.truncateSync()` instead.",
+      "Use `system.FsFile.truncateSync()` instead.",
     );
     return fs.ftruncateSync(rid, len);
   },
   ftruncate(rid, len) {
     internals.warnOnDeprecatedApi(
-      "Deno.ftruncate()",
+      "system.ftruncate()",
       new Error().stack,
-      "Use `Deno.FsFile.truncate()` instead.",
+      "Use `system.FsFile.truncate()` instead.",
     );
     return fs.ftruncate(rid, len);
   },
   async futime(rid, atime, mtime) {
     internals.warnOnDeprecatedApi(
-      "Deno.futime()",
+      "system.futime()",
       new Error().stack,
-      "Use `Deno.FsFile.utime()` instead.",
+      "Use `system.FsFile.utime()` instead.",
     );
     await fs.futime(rid, atime, mtime);
   },
   futimeSync(rid, atime, mtime) {
     internals.warnOnDeprecatedApi(
-      "Deno.futimeSync()",
+      "system.futimeSync()",
       new Error().stack,
-      "Use `Deno.FsFile.utimeSync()` instead.",
+      "Use `system.FsFile.utimeSync()` instead.",
     );
     fs.futimeSync(rid, atime, mtime);
   },
@@ -129,7 +129,7 @@ const denoNs = {
   SeekMode: io.SeekMode,
   read(rid, buffer) {
     internals.warnOnDeprecatedApi(
-      "Deno.read()",
+      "system.read()",
       new Error().stack,
       "Use `reader.read()` instead.",
     );
@@ -137,7 +137,7 @@ const denoNs = {
   },
   readSync(rid, buffer) {
     internals.warnOnDeprecatedApi(
-      "Deno.readSync()",
+      "system.readSync()",
       new Error().stack,
       "Use `reader.readSync()` instead.",
     );
@@ -145,7 +145,7 @@ const denoNs = {
   },
   write(rid, data) {
     internals.warnOnDeprecatedApi(
-      "Deno.write()",
+      "system.write()",
       new Error().stack,
       "Use `writer.write()` instead.",
     );
@@ -153,7 +153,7 @@ const denoNs = {
   },
   writeSync(rid, data) {
     internals.warnOnDeprecatedApi(
-      "Deno.writeSync()",
+      "system.writeSync()",
       new Error().stack,
       "Use `writer.writeSync()` instead.",
     );
@@ -170,7 +170,7 @@ const denoNs = {
   stderr: io.stderr,
   seek(rid, offset, whence) {
     internals.warnOnDeprecatedApi(
-      "Deno.seek()",
+      "system.seek()",
       new Error().stack,
       "Use `file.seek()` instead.",
     );
@@ -178,7 +178,7 @@ const denoNs = {
   },
   seekSync(rid, offset, whence) {
     internals.warnOnDeprecatedApi(
-      "Deno.seekSync()",
+      "system.seekSync()",
       new Error().stack,
       "Use `file.seekSync()` instead.",
     );
@@ -192,25 +192,25 @@ const denoNs = {
   startTls: tls.startTls,
   shutdown(rid) {
     internals.warnOnDeprecatedApi(
-      "Deno.shutdown()",
+      "system.shutdown()",
       new Error().stack,
-      "Use `Deno.Conn.closeWrite()` instead.",
+      "Use `system.Conn.closeWrite()` instead.",
     );
     net.shutdown(rid);
   },
   fstatSync(rid) {
     internals.warnOnDeprecatedApi(
-      "Deno.fstatSync()",
+      "system.fstatSync()",
       new Error().stack,
-      "Use `Deno.FsFile.statSync()` instead.",
+      "Use `system.FsFile.statSync()` instead.",
     );
     return fs.fstatSync(rid);
   },
   fstat(rid) {
     internals.warnOnDeprecatedApi(
-      "Deno.fstat()",
+      "system.fstat()",
       new Error().stack,
-      "Use `Deno.FsFile.stat()` instead.",
+      "Use `system.FsFile.stat()` instead.",
     );
     return fs.fstat(rid);
   },

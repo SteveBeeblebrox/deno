@@ -31,7 +31,7 @@ export function chown(
   validateInteger(uid, "uid", -1, kMaxUserId);
   validateInteger(gid, "gid", -1, kMaxUserId);
 
-  Deno.chown(pathModule.toNamespacedPath(path), uid, gid).then(
+  system.chown(pathModule.toNamespacedPath(path), uid, gid).then(
     () => callback(null),
     callback,
   );
@@ -56,5 +56,5 @@ export function chownSync(
   validateInteger(uid, "uid", -1, kMaxUserId);
   validateInteger(gid, "gid", -1, kMaxUserId);
 
-  Deno.chownSync(pathModule.toNamespacedPath(path), uid, gid);
+  system.chownSync(pathModule.toNamespacedPath(path), uid, gid);
 }

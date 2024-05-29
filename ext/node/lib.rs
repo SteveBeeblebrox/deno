@@ -652,7 +652,7 @@ pub fn load_cjs_module(
 
   let source_code = format!(
     r#"(function loadCjsModule(moduleName, isMain, inspectBrk) {{
-      Deno[Deno.internal].node.loadCjsModule(moduleName, isMain, inspectBrk);
+      Deno[system.internal].node.loadCjsModule(moduleName, isMain, inspectBrk);
     }})('{module}', {main}, {inspect_brk});"#,
     main = main,
     module = escape_for_single_quote_string(module),
