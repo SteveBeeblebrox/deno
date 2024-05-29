@@ -591,9 +591,6 @@ const NOT_IMPORTED_OPS = [
   "op_register_bench",
   "op_bench_get_origin",
 
-  // Related to `system.jupyter` API
-  "op_jupyter_broadcast",
-
   // Related to `system.test()` API
   "op_test_event_step_result_failed",
   "op_test_event_step_result_ignored",
@@ -692,7 +689,6 @@ const executionModes = {
   test: 5,
   bench: 6,
   serve: 7,
-  jupyter: 8,
 };
 
 function bootstrapMainRuntime(runtimeOptions, warmup = false) {
@@ -824,20 +820,6 @@ function bootstrapMainRuntime(runtimeOptions, warmup = false) {
       // TODO(bartlomieju): this is not ideal, but because we use `ObjectAssign`
       // above any properties that are defined elsewhere using `Object.defineProperty`
       // are lost.
-      let jupyterNs = undefined;
-      ObjectDefineProperty(finalDenoNs, "jupyter", {
-        get() {
-          if (jupyterNs) {
-            return jupyterNs;
-          }
-          throw new Error(
-            "system.jupyter is only available in `deno jupyter` subcommand.",
-          );
-        },
-        set(val) {
-          jupyterNs = val;
-        },
-      });
     } else {
       for (let i = 0; i <= unstableFeatures.length; i++) {
         const id = unstableFeatures[i];
