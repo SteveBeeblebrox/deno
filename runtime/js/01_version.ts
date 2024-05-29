@@ -6,15 +6,15 @@ const {
 } = primordials;
 
 interface Version {
-  deno: string;
+  sjs: string;
   v8: string;
-  typescript: string;
+  // typescript: string;
 }
 
 const version: Version = {
-  deno: "",
+  sjs: "",
   v8: "",
-  typescript: "",
+  // typescript: "",
 };
 
 function setVersions(
@@ -22,9 +22,9 @@ function setVersions(
   v8Version,
   tsVersion,
 ) {
-  version.deno = denoVersion;
+  version.sjs = denoVersion;
   version.v8 = v8Version;
-  version.typescript = tsVersion;
+  // version.typescript = tsVersion;
 
   ObjectFreeze(version);
 }
