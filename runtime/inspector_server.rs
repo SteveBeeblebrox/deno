@@ -459,7 +459,7 @@ impl InspectorInfo {
     let host_listen = format!("{}", self.host);
     let host = host.as_ref().unwrap_or(&host_listen);
     json!({
-      "description": "deno",
+      "description": "sjs",
       "devtoolsFrontendUrl": self.get_frontend_url(host),
       "faviconUrl": "https://deno.land/favicon.ico",
       "id": self.uuid.to_string(),
@@ -483,7 +483,7 @@ impl InspectorInfo {
 
   fn get_title(&self) -> String {
     format!(
-      "deno{} [pid: {}]",
+      "sjs{} [pid: {}]",
       self
         .thread_name
         .as_ref()
