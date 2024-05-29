@@ -248,7 +248,7 @@ async fn server(
         "Debugger listening on {}",
         info.get_websocket_debugger_url(&info.host.to_string())
       );
-      log::info!("Visit chrome://inspect to connect to the debugger.");
+      log::info!("Visit about://inspect to connect to the debugger.");
       if info.wait_for_session {
         log::info!("Waiting for debugger to connect.");
       }
