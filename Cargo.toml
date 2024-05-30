@@ -104,7 +104,7 @@ deno_cache_dir = "=0.10.0"
 dlopen2 = "0.6.1"
 ecb = "=0.1.2"
 elliptic-curve = { version = "0.13.4", features = ["alloc", "arithmetic", "ecdh", "std", "pem"] }
-encoding_rs = "=0.8.33"
+encoding_rs = "^0.8.33"
 faster-hex = "0.9"
 fastwebsockets = { version = "0.6", features = ["upgrade", "unstable-split"] }
 filetime = "0.2.16"
