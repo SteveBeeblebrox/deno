@@ -310,7 +310,7 @@ fn property_getter<'s>(
     ret.set(rv);
   }
 
-  return  v8::Intercepted::Yes;
+  return  v8::Intercepted::No;
 }
 
 fn property_setter<'s>(
@@ -341,7 +341,7 @@ fn property_setter<'s>(
   read_only |= attributes.is_read_only();
 
   if read_only {
-    return v8::Intercepted::Yes;
+    return v8::Intercepted::No;
   }
 
   // true for x = 5
@@ -365,15 +365,15 @@ fn property_setter<'s>(
     && is_contextual_store
     && !is_function
   {
-    return v8::Intercepted::Yes;
+    return v8::Intercepted::No;
   }
 
   if !is_declared && key.is_symbol() {
-    return v8::Intercepted::Yes;
+    return v8::Intercepted::No;
   };
 
   if ctx.sandbox(scope).set(scope, key.into(), value).is_none() {
-    return v8::Intercepted::Yes;
+    return v8::Intercepted::No;
   }
 
   if is_declared_on_sandbox {
@@ -401,7 +401,7 @@ fn property_setter<'s>(
     }
   }
 
-  return v8::Intercepted::Yes;
+  return v8::Intercepted::No;
 }
 
 fn property_deleter<'s>(
@@ -416,12 +416,12 @@ fn property_deleter<'s>(
   let sandbox = ctx.sandbox(scope);
   let context_scope = &mut v8::ContextScope::new(scope, context);
   if !sandbox.delete(context_scope, key.into()).unwrap_or(false) {
-    return v8::Intercepted::Yes;
+    return v8::Intercepted::No;
   }
 
   rv.set_bool(false);
 
-  return v8::Intercepted::Yes;
+  return v8::Intercepted::No;
 }
 
 fn property_enumerator<'s>(
@@ -467,7 +467,7 @@ fn property_definer<'s>(
   // If the property is set on the global as read_only, don't change it on
   // the global or sandbox.
   if is_declared && read_only && dont_delete {
-    return v8::Intercepted::Yes;
+    return v8::Intercepted::No;
   }
 
   let sandbox = ctx.sandbox(scope);
@@ -519,7 +519,7 @@ fn property_definer<'s>(
     }
   }
 
-  return v8::Intercepted::Yes;
+  return v8::Intercepted::No;
 }
 
 fn property_descriptor<'s>(
@@ -540,7 +540,7 @@ fn property_descriptor<'s>(
     }
   }
 
-  return v8::Intercepted::Yes;
+  return v8::Intercepted::No;
 }
 
 fn uint32_to_name<'s>(
@@ -585,14 +585,14 @@ fn indexed_property_deleter<'s>(
   let sandbox = ctx.sandbox(scope);
   let context_scope = &mut v8::ContextScope::new(scope, context);
   if !sandbox.delete_index(context_scope, index).unwrap_or(false) {
-    return v8::Intercepted::Yes;
+    return v8::Intercepted::No;
   }
 
   // Delete failed on the sandbox, intercept and do not delete on
   // the global object.
   rv.set_bool(false);
 
-  return v8::Intercepted::Yes;
+  return v8::Intercepted::No;
 }
 
 fn indexed_property_definer<'s>(
