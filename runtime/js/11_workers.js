@@ -130,7 +130,7 @@ class Worker extends EventTarget {
       ext?.permissions,
       this.#name,
       workerType,
-      false,
+      !(ext?.persistent ?? true),
     );
     this.#id = id;
     this.#pollControl();
