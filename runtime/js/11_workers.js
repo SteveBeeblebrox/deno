@@ -95,7 +95,7 @@ class Worker extends EventTarget {
     super();
     specifier = String(specifier);
     const {
-      deno,
+      ext,
       name,
       type = "classic",
     } = options;
@@ -127,7 +127,7 @@ class Worker extends EventTarget {
       specifier,
       hasSourceCode,
       sourceCode,
-      deno?.permissions,
+      ext?.permissions,
       this.#name,
       workerType,
       false,
