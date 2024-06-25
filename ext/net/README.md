@@ -30,7 +30,7 @@ In the `extensions` field of your `RuntimeOptions`
 
 ## Provided ops
 
-Following ops are provided, which can be accessed through `Deno.ops`:
+Following ops are provided, which can be accessed through `system.ops`:
 
 ### Net
 

@@ -97,7 +97,7 @@ export const exit = (code?: number | string) => {
     process.emit("exit", ProcessExitCode);
   }
 
-  // Any valid thing `process.exitCode` set is already held in Deno.exitCode.
+  // Any valid thing `process.exitCode` set is already held in system.exitCode.
   // At this point, we don't have to pass around Node's raw/string exit value.
   process.reallyExit(ProcessExitCode);
 };

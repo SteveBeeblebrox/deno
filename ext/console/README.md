@@ -13,7 +13,7 @@ global scope:
 import * as console from "ext:deno_console/01_console.js";
 Object.defineProperty(globalThis, "console", {
   value: new console.Console((msg, level) =>
-    globalThis.Deno.core.print(msg, level > 1)
+    globalThis.system.core.print(msg, level > 1)
   ),
   enumerable: false,
   configurable: true,
@@ -26,6 +26,6 @@ Then from rust, provide `deno_console::deno_console::init_ops_and_esm()` in the
 
 ## Provided ops
 
-Following ops are provided, which can be accessed through `Deno.ops`:
+Following ops are provided, which can be accessed through `system.ops`:
 
 - op_preview_entries

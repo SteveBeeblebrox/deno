@@ -54,7 +54,7 @@ Where the `Option<u64>` represents an optional seed for initialization.
 
 ## Provided ops
 
-Following ops are provided, which can be accessed through `Deno.ops`:
+Following ops are provided, which can be accessed through `system.ops`:
 
 - op_crypto_get_random_values
 - op_crypto_generate_key

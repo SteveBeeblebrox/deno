@@ -45,7 +45,7 @@ Then from rust, provide `deno_url::deno_url::init_ops_and_esm()` in the
 
 ## Provided ops
 
-Following ops are provided, which can be accessed through `Deno.ops`:
+Following ops are provided, which can be accessed through `system.ops`:
 
 - op_url_reparse
 - op_url_parse

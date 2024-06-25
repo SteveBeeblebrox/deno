@@ -115,7 +115,7 @@ Where:
 
 ## Provided ops
 
-Following ops are provided, which can be accessed through `Deno.ops`:
+Following ops are provided, which can be accessed through `system.ops`:
 
 - op_base64_decode
 - op_base64_encode
