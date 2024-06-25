@@ -149,7 +149,6 @@ declare namespace system {
   }
 
   /** @category Network */
-  // deno-lint-ignore no-empty-interface
   export interface TcpListenOptions extends ListenOptions {
   }
 

@@ -20,6 +20,7 @@ use indexmap::IndexSet;
 use log::error;
 use serde::Deserialize;
 use serde_json::from_value;
+use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -92,7 +93,7 @@ use crate::args::Flags;
 use crate::factory::CliFactory;
 use crate::file_fetcher::FileFetcher;
 use crate::graph_util;
-use crate::http_util::HttpClient;
+use crate::http_util::HttpClientProvider;
 use crate::lsp::config::ConfigWatchedFileType;
 use crate::lsp::logging::init_log_file;
 use crate::lsp::tsc::file_text_changes_to_workspace_edit;
@@ -191,7 +192,7 @@ pub struct Inner {
   /// The collection of documents that the server is currently handling, either
   /// on disk or "open" within the client.
   pub documents: Documents,
-  http_client: Arc<HttpClient>,
+  http_client_provider: Arc<HttpClientProvider>,
   initial_cwd: PathBuf,
   jsr_search_api: CliJsrSearchApi,
   /// Handles module registries, which allow discovery of modules
@@ -210,7 +211,7 @@ pub struct Inner {
   pub ts_server: Arc<TsServer>,
   /// A map of specifiers and URLs used to translate over the LSP.
   pub url_map: urls::LspUrlMap,
-  workspace_files: BTreeSet<ModuleSpecifier>,
+  workspace_files: IndexSet<ModuleSpecifier>,
   /// Set to `self.config.settings.enable_settings_hash()` after
   /// refreshing `self.workspace_files`.
   workspace_files_hash: u64,
@@ -445,7 +446,7 @@ impl LanguageServer {
     if capable {
       let mut scopes = Vec::with_capacity(folders.len() + 1);
       scopes.push(None);
-      for (_, folder) in &folders {
+      for (_, folder) in folders.as_ref() {
         scopes.push(Some(folder.uri.clone()));
       }
       let configs = client
@@ -460,7 +461,7 @@ impl LanguageServer {
         let mut configs = configs.into_iter();
         let unscoped = configs.next().unwrap();
         let mut folder_settings = Vec::with_capacity(folders.len());
-        for (folder_uri, _) in &folders {
+        for (folder_uri, _) in folders.as_ref() {
           folder_settings.push((folder_uri.clone(), configs.next().unwrap()));
         }
         let mut inner = self.inner.write().await;
@@ -475,10 +476,10 @@ impl LanguageServer {
 impl Inner {
   fn new(client: Client) -> Self {
     let cache = LspCache::default();
-    let http_client = Arc::new(HttpClient::new(None, None));
+    let http_client_provider = Arc::new(HttpClientProvider::new(None, None));
     let module_registry = ModuleRegistry::new(
       cache.deno_dir().registries_folder_path(),
-      http_client.clone(),
+      http_client_provider.clone(),
     );
     let jsr_search_api =
       CliJsrSearchApi::new(module_registry.file_fetcher.clone());
@@ -508,7 +509,7 @@ impl Inner {
       diagnostics_state,
       diagnostics_server,
       documents,
-      http_client,
+      http_client_provider,
       initial_cwd: initial_cwd.clone(),
       jsr_search_api,
       project_version: 0,
@@ -652,7 +653,7 @@ impl Inner {
     .unwrap_or_else(|_| RootCertStore::empty());
     let root_cert_store_provider =
       Arc::new(LspRootCertStoreProvider(root_cert_store));
-    self.http_client = Arc::new(HttpClient::new(
+    self.http_client_provider = Arc::new(HttpClientProvider::new(
       Some(root_cert_store_provider),
       workspace_settings
         .unsafely_ignore_certificate_errors
@@ -660,7 +661,7 @@ impl Inner {
     ));
     self.module_registry = ModuleRegistry::new(
       deno_dir.registries_folder_path(),
-      self.http_client.clone(),
+      self.http_client_provider.clone(),
     );
     let workspace_settings = self.config.workspace_settings();
     for (registry, enabled) in workspace_settings.suggest.imports.hosts.iter() {
@@ -681,7 +682,7 @@ impl Inner {
   pub fn update_cache(&mut self) {
     let mark = self.performance.mark("lsp.update_cache");
     self.cache.update_config(&self.config);
-    self.url_map.set_cache(self.cache.root_vendor().cloned());
+    self.url_map.set_cache(&self.cache);
     self.performance.measure(mark);
   }
 
@@ -801,12 +802,12 @@ impl Inner {
     })
   }
 
-  fn walk_workspace(config: &Config) -> (BTreeSet<ModuleSpecifier>, bool) {
+  fn walk_workspace(config: &Config) -> (IndexSet<ModuleSpecifier>, bool) {
     if !config.workspace_capable() {
       log::debug!("Skipped workspace walk due to client incapability.");
       return (Default::default(), false);
     }
-    let mut workspace_files = Default::default();
+    let mut workspace_files = IndexSet::default();
     let entry_limit = 1000;
     let mut pending = VecDeque::new();
     let mut entry_count = 0;
@@ -816,14 +817,37 @@ impl Inner {
       .filter_map(|p| specifier_to_file_path(&p.0).ok())
       .collect::<Vec<_>>();
     roots.sort();
-    for i in 0..roots.len() {
-      if i == 0 || !roots[i].starts_with(&roots[i - 1]) {
-        if let Ok(read_dir) = std::fs::read_dir(&roots[i]) {
-          pending.push_back((roots[i].clone(), read_dir));
+    let roots = roots
+      .iter()
+      .enumerate()
+      .filter(|(i, root)| *i == 0 || !root.starts_with(&roots[i - 1]))
+      .map(|(_, r)| r.clone())
+      .collect::<Vec<_>>();
+    let mut root_ancestors = BTreeSet::new();
+    for root in roots {
+      for ancestor in root.ancestors().skip(1) {
+        if root_ancestors.insert(ancestor.to_path_buf()) {
+          break;
+        }
+      }
+      if let Ok(read_dir) = std::fs::read_dir(&root) {
+        pending.push_back((root, read_dir));
+      }
+    }
+    for root_ancestor in root_ancestors {
+      for deno_json in ["deno.json", "deno.jsonc"] {
+        let path = root_ancestor.join(deno_json);
+        if path.exists() {
+          if let Ok(specifier) = ModuleSpecifier::from_file_path(path) {
+            workspace_files.insert(specifier);
+          }
         }
       }
     }
     while let Some((parent_path, read_dir)) = pending.pop_front() {
+      // Sort entries from each dir for consistency across operating systems.
+      let mut dir_files = BTreeSet::new();
+      let mut dir_subdirs = BTreeMap::new();
       for entry in read_dir {
         let Ok(entry) = entry else {
           continue;
@@ -836,17 +860,15 @@ impl Inner {
         let Ok(specifier) = ModuleSpecifier::from_file_path(&path) else {
           continue;
         };
-        // TODO(nayeemrmn): Don't walk folders that are `None` here and aren't
-        // in a `deno.json` scope.
-        if config.settings.specifier_enabled(&specifier) == Some(false) {
-          continue;
-        }
         let Ok(file_type) = entry.file_type() else {
           continue;
         };
         let Some(file_name) = path.file_name() else {
           continue;
         };
+        if config.settings.specifier_enabled(&specifier) == Some(false) {
+          continue;
+        }
         if file_type.is_dir() {
           let dir_name = file_name.to_string_lossy().to_lowercase();
           // We ignore these directories by default because there is a
@@ -865,7 +887,7 @@ impl Inner {
             continue;
           }
           if let Ok(read_dir) = std::fs::read_dir(&path) {
-            pending.push_back((path, read_dir));
+            dir_subdirs.insert(specifier, (path, read_dir));
           }
         } else if file_type.is_file()
           || file_type.is_symlink()
@@ -900,9 +922,11 @@ impl Inner {
               }
             }
           }
-          workspace_files.insert(specifier);
+          dir_files.insert(specifier);
         }
       }
+      workspace_files.extend(dir_files);
+      pending.extend(dir_subdirs.into_values());
     }
     (workspace_files, false)
   }
@@ -939,11 +963,12 @@ impl Inner {
       self.cache.global().clone(),
       CacheSetting::RespectHeaders,
       true,
-      self.http_client.clone(),
+      self.http_client_provider.clone(),
       Default::default(),
       None,
     );
     file_fetcher.set_download_log_level(super::logging::lsp_log_level());
+    let file_fetcher = Arc::new(file_fetcher);
     self
       .config
       .tree
@@ -983,7 +1008,7 @@ impl Inner {
       LspResolver::from_config(
         &self.config,
         &self.cache,
-        Some(&self.http_client),
+        Some(&self.http_client_provider),
       )
       .await,
     );
@@ -1106,14 +1131,12 @@ impl Inner {
   }
 
   async fn refresh_npm_specifiers(&mut self) {
-    let package_reqs = self.documents.npm_package_reqs();
+    let package_reqs = self.documents.npm_reqs_by_scope();
     let resolver = self.resolver.clone();
-    // spawn to avoid the LSP's Send requirements
-    let handle =
-      spawn(async move { resolver.set_npm_package_reqs(&package_reqs).await });
-    if let Err(err) = handle.await.unwrap() {
-      lsp_warn!("Could not set npm package requirements. {:#}", err);
-    }
+    // spawn due to the lsp's `Send` requirement
+    spawn(async move { resolver.set_npm_reqs(&package_reqs).await })
+      .await
+      .ok();
   }
 
   async fn did_close(&mut self, params: DidCloseTextDocumentParams) {
@@ -1306,17 +1329,19 @@ impl Inner {
 
     // spawn a blocking task to allow doing other work while this is occurring
     let text_edits = deno_core::unsync::spawn_blocking({
-      let fmt_options = self
+      let mut fmt_options = self
         .config
         .tree
         .fmt_options_for_specifier(&specifier)
         .options
         .clone();
+      fmt_options.use_tabs = Some(!params.options.insert_spaces);
+      fmt_options.indent_width = Some(params.options.tab_size as u8);
       let document = document.clone();
       move || {
         let format_result = match document.maybe_parsed_source() {
           Some(Ok(parsed_source)) => {
-            format_parsed_source(&parsed_source, &fmt_options)
+            format_parsed_source(parsed_source, &fmt_options)
           }
           Some(Err(err)) => Err(anyhow!("{:#}", err)),
           None => {
@@ -1329,12 +1354,12 @@ impl Inner {
               .map(|ext| file_path.with_extension(ext))
               .unwrap_or(file_path);
             // it's not a js/ts file, so attempt to format its contents
-            format_file(&file_path, &document.content(), &fmt_options)
+            format_file(&file_path, document.content(), &fmt_options)
           }
         };
         match format_result {
           Ok(Some(new_text)) => Some(text::get_edits(
-            &document.content(),
+            document.content(),
             &new_text,
             document.line_index().as_ref(),
           )),
@@ -1470,7 +1495,7 @@ impl Inner {
             {
               if let Some(url) = self
                 .resolver
-                .jsr_to_registry_url(&jsr_req_ref, file_referrer)
+                .jsr_to_resource_url(&jsr_req_ref, file_referrer)
               {
                 result = format!("{result} (<{url}>)");
               }
@@ -1604,7 +1629,9 @@ impl Inner {
               &specifier,
               diagnostic,
               asset_or_doc.document().map(|d| d.text_info()),
-              asset_or_doc.maybe_parsed_source().and_then(|r| r.ok()),
+              asset_or_doc
+                .maybe_parsed_source()
+                .and_then(|r| r.as_ref().ok()),
             )
             .map_err(|err| {
               error!("Unable to fix lint error: {:#}", err);
@@ -1789,11 +1816,15 @@ impl Inner {
 
   pub fn get_ts_response_import_mapper(
     &self,
-    _referrer: &ModuleSpecifier,
+    file_referrer: &ModuleSpecifier,
   ) -> TsResponseImportMapper {
     TsResponseImportMapper::new(
       &self.documents,
-      self.config.tree.root_import_map().map(|i| i.as_ref()),
+      self
+        .config
+        .tree
+        .data_for_specifier(file_referrer)
+        .and_then(|d| d.import_map.as_ref().map(|i| i.as_ref())),
       self.resolver.as_ref(),
     )
   }
@@ -1970,11 +2001,7 @@ impl Inner {
             self.get_asset_or_document(&reference_specifier)?;
           asset_or_doc.line_index()
         };
-        results.push(
-          reference
-            .entry
-            .to_location(reference_line_index, &self.url_map),
-        );
+        results.push(reference.entry.to_location(reference_line_index, self));
       }
 
       self.performance.measure(mark);
@@ -2096,6 +2123,10 @@ impl Inner {
       .map(|s| s.suggest.include_completions_for_import_statements)
       .unwrap_or(true)
     {
+      let file_referrer = asset_or_doc
+        .document()
+        .and_then(|d| d.file_referrer())
+        .unwrap_or(&specifier);
       response = completions::get_import_completions(
         &specifier,
         &params.text_document_position.position,
@@ -2105,7 +2136,12 @@ impl Inner {
         &self.jsr_search_api,
         &self.npm_search_api,
         &self.documents,
-        self.config.tree.root_import_map().map(|i| i.as_ref()),
+        self.resolver.as_ref(),
+        self
+          .config
+          .tree
+          .data_for_specifier(file_referrer)
+          .and_then(|d| d.import_map.as_ref().map(|i| i.as_ref())),
       )
       .await;
     }
@@ -2965,7 +3001,7 @@ impl tower_lsp::LanguageServer for LanguageServer {
           );
       }
 
-      (inner.client.clone(), inner.http_client.clone())
+      (inner.client.clone(), inner.http_client_provider.clone())
     };
 
     for registration in registrations {
@@ -3116,7 +3152,7 @@ impl tower_lsp::LanguageServer for LanguageServer {
           )
         })
         .collect::<Vec<(ModuleSpecifier, WorkspaceFolder)>>();
-      for (specifier, folder) in &inner.config.workspace_folders {
+      for (specifier, folder) in inner.config.workspace_folders.as_ref() {
         if !params.event.removed.is_empty()
           && params.event.removed.iter().any(|f| f.uri == folder.uri)
         {
@@ -3412,7 +3448,7 @@ impl Inner {
     let mark = self
       .performance
       .mark_with_args("lsp.cache", (&specifiers, &referrer));
-    let config_data = self.config.tree.root_data();
+    let config_data = self.config.tree.data_for_specifier(&referrer);
     let mut roots = if !specifiers.is_empty() {
       specifiers
     } else {
@@ -3421,13 +3457,17 @@ impl Inner {
 
     // always include the npm packages since resolution of one npm package
     // might affect the resolution of other npm packages
-    roots.extend(
-      self
-        .documents
-        .npm_package_reqs()
-        .iter()
-        .map(|req| ModuleSpecifier::parse(&format!("npm:{}", req)).unwrap()),
-    );
+    if let Some(npm_reqs) = self
+      .documents
+      .npm_reqs_by_scope()
+      .get(&config_data.map(|d| d.scope.clone()))
+    {
+      roots.extend(
+        npm_reqs
+          .iter()
+          .map(|req| ModuleSpecifier::parse(&format!("npm:{}", req)).unwrap()),
+      );
+    }
 
     let workspace_settings = self.config.workspace_settings();
     let cli_options = CliOptions::new(
@@ -3684,7 +3724,7 @@ mod tests {
     temp_dir.create_dir_all("root1/node_modules/");
     temp_dir.write("root1/node_modules/mod.ts", ""); // no, node_modules
 
-    temp_dir.create_dir_all("root1/sub_dir");
+    temp_dir.create_dir_all("root1/folder");
     temp_dir.create_dir_all("root1/target");
     temp_dir.create_dir_all("root1/node_modules");
     temp_dir.create_dir_all("root1/.git");
@@ -3702,14 +3742,15 @@ mod tests {
     temp_dir.write("root1/other.txt", ""); // no, text file
     temp_dir.write("root1/other.wasm", ""); // no, don't load wasm
     temp_dir.write("root1/Cargo.toml", ""); // no
-    temp_dir.write("root1/sub_dir/mod.ts", ""); // yes
-    temp_dir.write("root1/sub_dir/data.min.ts", ""); // no, minified file
+    temp_dir.write("root1/folder/mod.ts", ""); // yes
+    temp_dir.write("root1/folder/data.min.ts", ""); // no, minified file
     temp_dir.write("root1/.git/main.ts", ""); // no, .git folder
     temp_dir.write("root1/node_modules/main.ts", ""); // no, because it's in a node_modules folder
     temp_dir.write("root1/target/main.ts", ""); // no, because there is a Cargo.toml in the root directory
 
     temp_dir.create_dir_all("root2/folder");
     temp_dir.create_dir_all("root2/sub_folder");
+    temp_dir.create_dir_all("root2/root2.1");
     temp_dir.write("root2/file1.ts", ""); // yes, enabled
     temp_dir.write("root2/file2.ts", ""); // no, not enabled
     temp_dir.write("root2/folder/main.ts", ""); // yes, enabled
@@ -3717,14 +3758,21 @@ mod tests {
     temp_dir.write("root2/sub_folder/a.js", ""); // no, not enabled
     temp_dir.write("root2/sub_folder/b.ts", ""); // no, not enabled
     temp_dir.write("root2/sub_folder/c.js", ""); // no, not enabled
+    temp_dir.write("root2/root2.1/main.ts", ""); // yes, enabled as separate root
 
     temp_dir.create_dir_all("root3/");
     temp_dir.write("root3/mod.ts", ""); // no, not enabled
 
+    temp_dir.create_dir_all("root4_parent/root4");
+    temp_dir.write("root4_parent/deno.json", ""); // yes, enabled as deno.json above root
+    temp_dir.write("root4_parent/root4/main.ts", ""); // yes, enabled
+
     let mut config = Config::new_with_roots(vec![
       temp_dir.uri().join("root1/").unwrap(),
       temp_dir.uri().join("root2/").unwrap(),
+      temp_dir.uri().join("root2/root2.1/").unwrap(),
       temp_dir.uri().join("root3/").unwrap(),
+      temp_dir.uri().join("root4_parent/root4/").unwrap(),
     ]);
     config.set_client_capabilities(ClientCapabilities {
       workspace: Some(Default::default()),
@@ -3753,9 +3801,23 @@ mod tests {
           },
         ),
         (
+          temp_dir.uri().join("root2/root2.1/").unwrap(),
+          WorkspaceSettings {
+            enable: Some(true),
+            ..Default::default()
+          },
+        ),
+        (
           temp_dir.uri().join("root3/").unwrap(),
           WorkspaceSettings {
             enable: Some(false),
+            ..Default::default()
+          },
+        ),
+        (
+          temp_dir.uri().join("root4_parent/root4/").unwrap(),
+          WorkspaceSettings {
+            enable: Some(true),
             ..Default::default()
           },
         ),
@@ -3767,6 +3829,7 @@ mod tests {
     assert_eq!(
       json!(workspace_files),
       json!([
+        temp_dir.uri().join("root4_parent/deno.json").unwrap(),
         temp_dir.uri().join("root1/mod0.ts").unwrap(),
         temp_dir.uri().join("root1/mod1.js").unwrap(),
         temp_dir.uri().join("root1/mod2.tsx").unwrap(),
@@ -3777,9 +3840,11 @@ mod tests {
         temp_dir.uri().join("root1/mod7.d.mts").unwrap(),
         temp_dir.uri().join("root1/mod8.json").unwrap(),
         temp_dir.uri().join("root1/mod9.jsonc").unwrap(),
-        temp_dir.uri().join("root1/sub_dir/mod.ts").unwrap(),
         temp_dir.uri().join("root2/file1.ts").unwrap(),
+        temp_dir.uri().join("root4_parent/root4/main.ts").unwrap(),
+        temp_dir.uri().join("root1/folder/mod.ts").unwrap(),
         temp_dir.uri().join("root2/folder/main.ts").unwrap(),
+        temp_dir.uri().join("root2/root2.1/main.ts").unwrap(),
       ])
     );
   }

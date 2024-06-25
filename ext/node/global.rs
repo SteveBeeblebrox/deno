@@ -1,13 +1,12 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 use std::mem::MaybeUninit;
-use std::rc::Rc;
 
 use deno_core::v8;
 use deno_core::v8::GetPropertyNamesArgs;
 use deno_core::v8::MapFnTo;
 
-use crate::NodeResolver;
+use crate::resolution::NodeResolverRc;
 
 // NOTE(bartlomieju): somehow calling `.map_fn_to()` multiple times on a function
 // returns two different pointers. That shouldn't be the case as `.map_fn_to()`
@@ -271,12 +270,12 @@ fn current_mode(scope: &mut v8::HandleScope) -> Mode {
   };
   let op_state = deno_core::JsRuntime::op_state_from(scope);
   let op_state = op_state.borrow();
-  let Some(node_resolver) = op_state.try_borrow::<Rc<NodeResolver>>() else {
+  let Some(node_resolver) = op_state.try_borrow::<NodeResolverRc>() else {
     return Mode::Deno;
   };
   let mut buffer = [MaybeUninit::uninit(); 2048];
   let str = v8_string.to_rust_cow_lossy(scope, &mut buffer);
-  if node_resolver.in_npm_package_with_cache(str) {
+  if str.starts_with("node:") || node_resolver.in_npm_package_with_cache(str) {
     Mode::Node
   } else {
     Mode::Deno
@@ -316,8 +315,7 @@ pub fn getter<'s>(
   };
 
   rv.set(value);
-
-  return v8::Intercepted::No;
+  v8::Intercepted::Yes
 }
 
 pub fn setter<'s>(
@@ -326,7 +324,7 @@ pub fn setter<'s>(
   value: v8::Local<'s, v8::Value>,
   args: v8::PropertyCallbackArguments<'s>,
   mut rv: v8::ReturnValue,
-) -> v8::Intercepted{
+) -> v8::Intercepted {
   if !is_managed_key(scope, key) {
     return v8::Intercepted::No;
   };
@@ -355,8 +353,7 @@ pub fn setter<'s>(
   };
 
   rv.set(success);
-
-  return v8::Intercepted::No;
+  v8::Intercepted::Yes
 }
 
 pub fn query<'s>(
@@ -387,8 +384,7 @@ pub fn query<'s>(
   };
 
   rv.set_uint32(attributes.as_u32());
-
-  return v8::Intercepted::No;
+  v8::Intercepted::Yes
 }
 
 pub fn deleter<'s>(
@@ -418,12 +414,11 @@ pub fn deleter<'s>(
     let message = v8::String::new(scope, "Cannot delete property").unwrap();
     let exception = v8::Exception::type_error(scope, message);
     scope.throw_exception(exception);
-    return v8::Intercepted::No;
+    return v8::Intercepted::Yes;
   }
 
   rv.set_bool(success);
-
-  return v8::Intercepted::No;
+  v8::Intercepted::Yes
 }
 
 pub fn enumerator<'s>(
@@ -459,7 +454,7 @@ pub fn definer<'s>(
   key: v8::Local<'s, v8::Name>,
   descriptor: &v8::PropertyDescriptor,
   args: v8::PropertyCallbackArguments<'s>,
-  mut rv: v8::ReturnValue,
+  _rv: v8::ReturnValue,
 ) -> v8::Intercepted {
   if !is_managed_key(scope, key) {
     return v8::Intercepted::No;
@@ -482,12 +477,9 @@ pub fn definer<'s>(
     let message = v8::String::new(scope, "Cannot define property").unwrap();
     let exception = v8::Exception::type_error(scope, message);
     scope.throw_exception(exception);
-    return v8::Intercepted::No;
   }
 
-  rv.set_bool(success);
-
-  return v8::Intercepted::No;
+  v8::Intercepted::Yes
 }
 
 pub fn descriptor<'s>(
@@ -513,7 +505,7 @@ pub fn descriptor<'s>(
 
   let Some(descriptor) = inner.get_own_property_descriptor(scope, key) else {
     scope.rethrow().expect("to have caught an exception");
-    return v8::Intercepted::No;
+    return v8::Intercepted::Yes;
   };
 
   if descriptor.is_undefined() {
@@ -521,6 +513,5 @@ pub fn descriptor<'s>(
   }
 
   rv.set(descriptor);
-
-  return v8::Intercepted::No;
+  v8::Intercepted::Yes
 }
